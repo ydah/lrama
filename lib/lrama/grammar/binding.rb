@@ -6,7 +6,9 @@ module Lrama
       def initialize(parameterizing_rule, actual_args)
         @parameters = parameterizing_rule.parameters
         @actual_args = actual_args
-        @parameter_to_arg = @parameters.zip(actual_args).to_h { |param, arg| [param.s_value, arg] }
+        @parameter_to_arg = @parameters.zip(actual_args).map do |param, arg|
+          [param.s_value, arg]
+        end.to_h
       end
 
       def resolve_symbol(symbol)

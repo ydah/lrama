@@ -57,16 +57,36 @@ module Lrama
 
       def setup_rules(parameterizing_rule_resolver)
         preprocess_references unless @skip_preprocess_references
-        if rhs.any? { |token| parameterizing_rule_resolver.find_inline(token) }
-          resolve_inline(parameterizing_rule_resolver)
-        else
-          process_rhs(parameterizing_rule_resolver)
-        end
+        process_rhs(parameterizing_rule_resolver)
         build_rules
       end
 
       def rules
         @parameterizing_rules + @inline_rules + @midrule_action_rules + @rules
+      end
+
+      def has_inline_rules?(parameterizing_rule_resolver)
+        rhs.any? { |token| parameterizing_rule_resolver.find_inline(token) }
+      end
+
+      def resolve_inline_rules(parameterizing_rule_resolver)
+        resolved_builders = []
+        rhs.each_with_index do |token, i|
+          if inline_rule = parameterizing_rule_resolver.find_inline(token)
+            inline_rule.rhs_list.each do |inline_rhs|
+              rule_builder = RuleBuilder.new(@rule_counter, @midrule_action_counter, lhs_tag: lhs_tag, skip_preprocess_references: true)
+              resolve_inline_rhs(rule_builder, inline_rhs, i)
+              rule_builder.lhs = lhs
+              rule_builder.line = line
+              rule_builder.user_code = replace_inline_user_code(inline_rhs, i)
+              rule_builder.complete_input
+              rule_builder.setup_rules(parameterizing_rule_resolver)
+              resolved_builders << rule_builder
+            end
+            break
+          end
+        end
+        resolved_builders
       end
 
       private
@@ -172,23 +192,6 @@ module Lrama
         "#{token.rule_name}_#{s_values.join('_')}"
       end
 
-      def resolve_inline(parameterizing_rule_resolver)
-        rhs.each_with_index do |token, i|
-          if inline_rule = parameterizing_rule_resolver.find_inline(token)
-            inline_rule.rhs_list.each_with_index do |inline_rhs|
-              rule_builder = RuleBuilder.new(@rule_counter, @midrule_action_counter, lhs_tag: lhs_tag, skip_preprocess_references: true)
-              resolve_inline_rhs(rule_builder, inline_rhs, i)
-              rule_builder.lhs = lhs
-              rule_builder.line = line
-              rule_builder.user_code = replace_inline_user_code(inline_rhs, i)
-              rule_builder.complete_input
-              rule_builder.setup_rules(parameterizing_rule_resolver)
-              @rule_builders_for_inline_rules << rule_builder
-            end
-          end
-        end
-      end
-
       def resolve_inline_rhs(rule_builder, inline_rhs, index)
         rhs.each_with_index do |token, i|
           if index == i
@@ -204,6 +207,9 @@ module Lrama
         return user_code if user_code.nil?
 
         code = user_code.s_value.gsub(/\$#{index + 1}/, inline_rhs.user_code.s_value)
+        user_code.references[(index+1)..-1]&.each do |ref|
+          code = code.gsub(/\$#{ref.index}/, "$#{ref.index + (inline_rhs.symbols.count-1)}")
+        end
         Lrama::Lexer::Token::UserCode.new(s_value: code, location: user_code.location)
       end
 
@@ -238,9 +244,6 @@ module Lrama
             end
 
             if ref.number
-              # TODO: When Inlining is implemented, for example, if `$1` is expanded to multiple RHS tokens,
-              #       `$2` needs to access `$2 + n` to actually access it. So, after the Inlining implementation,
-              #       it needs resolves from number to index.
               ref.index = ref.number
             end
 

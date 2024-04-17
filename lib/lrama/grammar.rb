@@ -63,6 +63,10 @@ module Lrama
       append_special_symbols
     end
 
+    def create_rule_builder(rule_counter, midrule_action_counter)
+      RuleBuilder.new(rule_counter, midrule_action_counter, @parameterizing_rule_resolver)
+    end
+
     def add_percent_code(id:, code:)
       @percent_codes << PercentCode.new(id.s_value, code.s_value)
     end
@@ -256,7 +260,7 @@ module Lrama
 
     def setup_rules
       @rule_builders.each do |builder|
-        builder.setup_rules(@parameterizing_rule_resolver)
+        builder.setup_rules
       end
     end
 
@@ -291,10 +295,10 @@ module Lrama
     end
 
     def resolve_inline_rules
-      while @rule_builders.any? {|r| r.has_inline_rules?(@parameterizing_rule_resolver) } do
+      while @rule_builders.any? {|r| r.has_inline_rules? } do
         @rule_builders.map! do |builder|
-          if builder.has_inline_rules?(@parameterizing_rule_resolver)
-            builder.resolve_inline_rules(@parameterizing_rule_resolver)
+          if builder.has_inline_rules?
+            builder.resolve_inline_rules
           else
             builder
           end

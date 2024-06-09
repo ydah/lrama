@@ -2323,7 +2323,7 @@ RSpec.describe Lrama::Parser do
                 token_code: nil,
                 nullable: false,
                 precedence_sym: grammar.find_symbol_by_s_value!("YYEOF"),
-                lineno: 24,
+                lineno: 23,
               ),
               Rule.new(
                 id: 1,
@@ -2332,7 +2332,7 @@ RSpec.describe Lrama::Parser do
                 token_code: nil,
                 nullable: true,
                 precedence_sym: nil,
-                lineno: 24,
+                lineno: 23,
               ),
               Rule.new(
                 id: 2,
@@ -2343,22 +2343,10 @@ RSpec.describe Lrama::Parser do
                 token_code: T::UserCode.new(s_value: " $$ = $1; "),
                 nullable: false,
                 precedence_sym: grammar.find_symbol_by_s_value!("number"),
-                lineno: 24,
+                lineno: 23,
               ),
               Rule.new(
                 id: 3,
-                lhs: grammar.find_symbol_by_s_value!("defined_rule_number_true"),
-                rhs: [
-                  grammar.find_symbol_by_s_value!("number"),
-                  grammar.find_symbol_by_s_value!("number"),
-                ],
-                token_code: T::UserCode.new(s_value: " $$ = $1; "),
-                nullable: false,
-                precedence_sym: grammar.find_symbol_by_s_value!("number"),
-                lineno: 24,
-              ),
-              Rule.new(
-                id: 4,
                 lhs: grammar.find_symbol_by_s_value!("r_true"),
                 rhs: [
                   grammar.find_symbol_by_s_value!("defined_rule_number_true"),
@@ -2366,38 +2354,27 @@ RSpec.describe Lrama::Parser do
                 token_code: nil,
                 nullable: true,
                 precedence_sym: nil,
-                lineno: 24,
+                lineno: 23,
               ),
               Rule.new(
-                id: 5,
+                id: 4,
                 lhs: grammar.find_symbol_by_s_value!("defined_rule_number_false"),
                 rhs: [],
                 token_code: nil,
                 nullable: true,
                 precedence_sym: nil,
-                lineno: 27,
+                lineno: 26,
               ),
               Rule.new(
-                id: 6,
-                lhs: grammar.find_symbol_by_s_value!("defined_rule_number_false"),
-                rhs: [
-                  grammar.find_symbol_by_s_value!("number"),
-                ],
-                token_code: T::UserCode.new(s_value: " $$ = $1; "),
-                nullable: false,
-                precedence_sym: grammar.find_symbol_by_s_value!("number"),
-                lineno: 27,
-              ),
-              Rule.new(
-                id: 7,
+                id: 5,
                 lhs: grammar.find_symbol_by_s_value!("r_false"),
                 rhs: [
-                  grammar.find_symbol_by_s_value!("defined_rule_number_false"),
+                  grammar.find_symbol_by_s_value!("defined_rule_number_false")
                 ],
                 token_code: nil,
                 nullable: true,
                 precedence_sym: nil,
-                lineno: 27,
+                lineno: 26,
               ),
             ])
           end

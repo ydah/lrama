@@ -7,6 +7,7 @@ require_relative "grammar/code"
 require_relative "grammar/counter"
 require_relative "grammar/destructor"
 require_relative "grammar/error_token"
+require_relative "grammar/inlined_rule_builder"
 require_relative "grammar/parameterizing_rule"
 require_relative "grammar/percent_code"
 require_relative "grammar/precedence"
@@ -294,10 +295,10 @@ module Lrama
     end
 
     def resolve_inline_rules
-      while @rule_builders.any? {|r| r.has_inline_rules? } do
+      while @rule_builders.any?(&:has_inline_rules?) do
         @rule_builders = @rule_builders.flat_map do |builder|
           if builder.has_inline_rules?
-            builder.resolve_inline_rules
+            builder.build_inlined_builders
           else
             builder
           end

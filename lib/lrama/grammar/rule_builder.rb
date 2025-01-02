@@ -66,27 +66,14 @@ module Lrama
         rhs.any? { |token| @parameterizing_rule_resolver.find_inline(token) }
       end
 
-      def resolve_inline_rules
-        resolved_builders = [] #: Array[RuleBuilder]
+      def build_inlined_builders
+        inlined_rule_builder = Lrama::Grammar::InlinedRuleBuilder.new(@rule_counter, @midrule_action_counter, @parameterizing_rule_resolver, @lhs, @lhs_tag, @rhs, @user_code, @precedence_sym, @line)
         rhs.each_with_index do |token, i|
-          if (inline_rule = @parameterizing_rule_resolver.find_inline(token))
-            inline_rule.rhs_list.each do |inline_rhs|
-              rule_builder = RuleBuilder.new(@rule_counter, @midrule_action_counter, @parameterizing_rule_resolver, lhs_tag: lhs_tag)
-              if token.is_a?(Lexer::Token::InstantiateRule)
-                resolve_inline_rhs(rule_builder, inline_rhs, i, Binding.new(inline_rule, token.args))
-              else
-                resolve_inline_rhs(rule_builder, inline_rhs, i)
-              end
-              rule_builder.lhs = lhs
-              rule_builder.line = line
-              rule_builder.precedence_sym = precedence_sym
-              rule_builder.user_code = replace_inline_user_code(inline_rhs, i)
-              resolved_builders << rule_builder
-            end
-            break
-          end
+          next unless (inline_rule = @parameterizing_rule_resolver.find_inline(token))
+
+          return inlined_rule_builder.build_builders(inline_rule, token, i)
         end
-        resolved_builders
+        []
       end
 
       private
@@ -136,7 +123,7 @@ module Lrama
             raise "Unexpected token. #{token}" unless parameterizing_rule
 
             bindings = Binding.new(parameterizing_rule, token.args)
-            lhs_s_value = lhs_s_value(token, bindings)
+            lhs_s_value = bindings.concatenated_args_str(token)
             if (created_lhs = @parameterizing_rule_resolver.created_lhs(lhs_s_value))
               @replaced_rhs << created_lhs
             else
@@ -172,41 +159,6 @@ module Lrama
             raise "Unexpected token. #{token}"
           end
         end
-      end
-
-      def lhs_s_value(token, bindings)
-        s_values = token.args.map do |arg|
-          resolved = bindings.resolve_symbol(arg)
-          if resolved.is_a?(Lexer::Token::InstantiateRule)
-            [resolved.s_value, resolved.args.map(&:s_value)]
-          else
-            resolved.s_value
-          end
-        end
-        "#{token.rule_name}_#{s_values.join('_')}"
-      end
-
-      def resolve_inline_rhs(rule_builder, inline_rhs, index, bindings = nil)
-        rhs.each_with_index do |token, i|
-          if index == i
-            inline_rhs.symbols.each { |sym| rule_builder.add_rhs(bindings.nil? ? sym : bindings.resolve_symbol(sym)) }
-          else
-            rule_builder.add_rhs(token)
-          end
-        end
-      end
-
-      def replace_inline_user_code(inline_rhs, index)
-        return user_code if inline_rhs.user_code.nil?
-        return user_code if user_code.nil?
-
-        code = user_code.s_value.gsub(/\$#{index + 1}/, inline_rhs.user_code.s_value)
-        user_code.references.each do |ref|
-          next if ref.index.nil? || ref.index <= index # nil is a case for `$$`
-          code = code.gsub(/\$#{ref.index}/, "$#{ref.index + (inline_rhs.symbols.count-1)}")
-          code = code.gsub(/@#{ref.index}/, "@#{ref.index + (inline_rhs.symbols.count-1)}")
-        end
-        Lrama::Lexer::Token::UserCode.new(s_value: code, location: user_code.location)
       end
 
       def numberize_references

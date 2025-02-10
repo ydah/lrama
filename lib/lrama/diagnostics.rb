@@ -11,7 +11,7 @@ module Lrama
     def run(diagnostic)
       if diagnostic
         diagnose_conflict
-        diagnose_parameterizing_redefined
+        diagnose_parameterized_redefined
       end
     end
 
@@ -27,9 +27,9 @@ module Lrama
       end
     end
 
-    def diagnose_parameterizing_redefined
-      @grammar.parameterizing_rule_resolver.redefined_rules.each do |rule|
-        @logger.warn("parameterizing rule redefined: #{rule}")
+    def diagnose_parameterized_redefined
+      @grammar.parameterized_resolver.redefined_rules.each do |rule|
+        @logger.warn("parameterized rule redefined: #{rule}")
       end
     end
   end

@@ -33,7 +33,7 @@ module Lrama
         grammar = Lrama::Parser.new(text, @options.grammar_file, @options.debug, @options.define).parse
         unless grammar.no_stdlib
           stdlib_grammar = Lrama::Parser.new(File.read(STDLIB_FILE_PATH), STDLIB_FILE_PATH, @options.debug).parse
-          grammar.prepend_parameterized_rules(stdlib_grammar.parameterizing_rules)
+          grammar.prepend_parameterized_rules(stdlib_grammar.parameterized_rules)
         end
         grammar.prepare
         grammar.validate!

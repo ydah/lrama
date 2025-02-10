@@ -112,8 +112,8 @@ RSpec.describe Lrama::Diagnostics do
         logger = Lrama::Logger.new
         allow(logger).to receive(:warn)
         Lrama::Diagnostics.new(grammar, states, logger).run(true)
-        expect(logger).to have_received(:warn).with("parameterizing rule redefined: foo(X)")
-        expect(logger).to have_received(:warn).with("parameterizing rule redefined: foo(Y)")
+        expect(logger).to have_received(:warn).with("parameterized rule redefined: foo(X)")
+        expect(logger).to have_received(:warn).with("parameterized rule redefined: foo(Y)")
       end
     end
   end

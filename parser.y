@@ -365,13 +365,37 @@ rule
           result = val[0].append(builder)
         }
 
-  rhs:
-      "%empty"?
+  rhs: rhs_base
+      | "%prec" symbol rhs_base
+        {
+          sym = @grammar.find_symbol_by_id!(val[1])
+          @prec_seen = true
+          builder = val[2]
+          builder.precedence_sym = sym
+          result = builder
+        }
+      | rhs_base "%prec" symbol
+        {
+          sym = @grammar.find_symbol_by_id!(val[2])
+          @prec_seen = true
+          builder = val[0]
+          builder.precedence_sym = sym
+          result = builder
+        }
+      | # empty
         {
           reset_precs
           result = @grammar.create_rule_builder(@rule_counter, @midrule_action_counter)
         }
-    | rhs symbol named_ref?
+      ;
+
+  rhs_base:
+      "%empty"
+        {
+          reset_precs
+          result = @grammar.create_rule_builder(@rule_counter, @midrule_action_counter)
+        }
+    | rhs_base symbol named_ref?
         {
           token = val[1]
           token.alias_name = val[2]
@@ -379,7 +403,7 @@ rule
           builder.add_rhs(token)
           result = builder
         }
-    | rhs symbol parameterized_suffix named_ref? TAG?
+    | rhs_base symbol parameterized_suffix named_ref? TAG?
         {
           token = Lrama::Lexer::Token::InstantiateRule.new(s_value: val[2], alias_name: val[3], location: @lexer.location, args: [val[1]], lhs_tag: val[4])
           builder = val[0]
@@ -387,7 +411,7 @@ rule
           builder.line = val[1].first_line
           result = builder
         }
-    | rhs IDENTIFIER "(" parameterized_args ")" named_ref? TAG?
+    | rhs_base IDENTIFIER "(" parameterized_args ")" named_ref? TAG?
         {
           token = Lrama::Lexer::Token::InstantiateRule.new(s_value: val[1].s_value, alias_name: val[5], location: @lexer.location, args: val[3], lhs_tag: val[6])
           builder = val[0]
@@ -395,21 +419,13 @@ rule
           builder.line = val[1].first_line
           result = builder
         }
-    | rhs midrule_action named_ref? TAG?
+    | rhs_base midrule_action named_ref? TAG?
         {
           user_code = val[1]
           user_code.alias_name = val[2]
           user_code.tag = val[3]
           builder = val[0]
           builder.user_code = user_code
-          result = builder
-        }
-    | rhs "%prec" symbol
-        {
-          sym = @grammar.find_symbol_by_id!(val[2])
-          @prec_seen = true
-          builder = val[0]
-          builder.precedence_sym = sym
           result = builder
         }
 

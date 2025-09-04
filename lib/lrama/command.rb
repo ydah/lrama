@@ -9,7 +9,7 @@ module Lrama
       @logger = Lrama::Logger.new
       @options = OptionParser.parse(argv)
       @tracer = Tracer.new(STDERR, **@options.trace_opts)
-      @reporter = Reporter.new(**@options.report_opts)
+      @reporter = Reporter.new(mode: @options.report_mode, **@options.report_opts)
       @warnings = Warnings.new(@logger, @options.warnings)
     rescue => e
       abort format_error_message(e.message)

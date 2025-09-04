@@ -45,7 +45,9 @@ module Lrama
       end
 
       if !@report.empty? && @options.report_file.nil? && @options.grammar_file
-        @options.report_file = File.dirname(@options.grammar_file) + "/" + File.basename(@options.grammar_file, ".*") + ".output"
+        suffix = '.output'
+        suffix = suffix + ".html" if @options.report_mode == :html
+        @options.report_file = File.dirname(@options.grammar_file) + "/" + File.basename(@options.grammar_file, ".*") + suffix
       end
 
       if !@options.header_file && @options.header
@@ -103,6 +105,11 @@ module Lrama
         o.on_tail '    all                              include all the above reports'
         o.on_tail '    none                             disable all reports'
         o.on('--report-file=FILE', 'also produce details on the automaton output to a file named FILE') {|v| @options.report_file = v }
+        o.on('--report-mode=MODE', 'set report mode (default: text)') {|v| @options.report_mode = v.to_sym }
+        o.on_tail ''
+        o.on_tail 'MODE is reported in one of the following formats:'
+        o.on_tail '    text                             plain text format'
+        o.on_tail '    html                             HTML format'
         o.on('-o', '--output=FILE', 'leave output to FILE') {|v| @options.outfile = v }
         o.on('--trace=TRACES', Array, 'also output trace logs at runtime') {|v| @trace = v }
         o.on_tail ''

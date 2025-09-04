@@ -3,11 +3,19 @@
 module Lrama
   class Reporter
     class Rules
-      # @rbs (?rules: bool, **bool _) -> void
-      def initialize: (?rules: bool, **bool _) -> void
+      # @rbs (?rules: bool, ?mode: Symbol, **untyped _) -> void
+      def initialize: (?rules: bool, ?mode: Symbol, **untyped _) -> void
 
       # @rbs (IO io, Lrama::States states) -> void
       def report: (IO io, Lrama::States states) -> void
+
+      private
+
+      # @rbs (IO io, Array[untyped] sorted_frequency, Array[Lrama::Grammar::Symbol] unused_rules) -> void
+      def report_html: (IO io, Array[untyped] sorted_frequency, Array[Lrama::Grammar::Symbol] unused_rules) -> void
+
+      # @rbs (IO io, Array[untyped] sorted_frequency, Array[Lrama::Grammar::Symbol] unused_rules) -> void
+      def report_text: (IO io, Array[untyped] sorted_frequency, Array[Lrama::Grammar::Symbol] unused_rules) -> void
     end
   end
 end

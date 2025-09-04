@@ -3,13 +3,22 @@
 module Lrama
   class Reporter
     class Precedences
+      # @rbs (?mode: Symbol, **untyped _) -> void
+      def initialize: (?mode: Symbol, **untyped _) -> void
+
       # @rbs (IO io, Lrama::States states) -> void
       def report: (IO io, Lrama::States states) -> void
 
       private
 
       # @rbs (IO io, Lrama::States states) -> void
-      def report_precedences: (IO io, Lrama::States states) -> void
+      def report_html: (IO io, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::States states) -> void
+      def report_text: (IO io, Lrama::States states) -> void
+
+      # @rbs (Lrama::Grammar::Symbol symbol) -> String
+      def format_symbol_html: (Lrama::Grammar::Symbol symbol) -> String
     end
   end
 end

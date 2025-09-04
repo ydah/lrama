@@ -3,13 +3,19 @@
 module Lrama
   class Reporter
     class Conflicts
+      # @rbs (?mode: Symbol, **untyped _) -> void
+      def initialize: (?mode: Symbol, **untyped _) -> void
+
       # @rbs (IO io, Lrama::States states) -> void
       def report: (IO io, Lrama::States states) -> void
 
       private
 
       # @rbs (IO io, Lrama::States states) -> void
-      def report_conflicts: (IO io, Lrama::States states) -> void
+      def report_html: (IO io, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::States states) -> void
+      def report_text: (IO io, Lrama::States states) -> void
 
       # @rbs (Array[(Lrama::State::ShiftReduceConflict | Lrama::State::ReduceReduceConflict)] conflicts) -> Array[String]
       def format_conflict_messages: (Array[Lrama::State::ShiftReduceConflict | Lrama::State::ReduceReduceConflict] conflicts) -> Array[String]

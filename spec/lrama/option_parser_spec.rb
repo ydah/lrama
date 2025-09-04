@@ -58,6 +58,7 @@ RSpec.describe Lrama::OptionParser do
               -d                               also produce a header file
               -r, --report=REPORTS             also produce details on the automaton
                   --report-file=FILE           also produce details on the automaton output to a file named FILE
+                  --report-mode=MODE           set report mode (default: text)
               -o, --output=FILE                leave output to FILE
                   --trace=TRACES               also output trace logs at runtime
                   --diagram=[FILE]             generate a diagram of the rules
@@ -85,6 +86,10 @@ RSpec.describe Lrama::OptionParser do
               verbose                          report detailed internal state and analysis results
               all                              include all the above reports
               none                             disable all reports
+
+          MODE is reported in one of the following formats:
+              text                             plain text format
+              html                             HTML format
 
           TRACES is a list of comma-separated words that can include:
               automaton                        display states

@@ -3,11 +3,22 @@
 module Lrama
   class Reporter
     class Terms
-      # @rbs (?terms: bool, **bool _) -> void
-      def initialize: (?terms: bool, **bool _) -> void
+      # @rbs (?terms: bool, ?mode: Symbol, **untyped _) -> void
+      def initialize: (?terms: bool, ?mode: Symbol, **untyped _) -> void
 
       # @rbs (IO io, Lrama::States states) -> void
       def report: (IO io, Lrama::States states) -> void
+
+      private
+
+      # @rbs (IO io, Lrama::States states) -> void
+      def report_html: (IO io, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::States states) -> void
+      def report_text: (IO io, Lrama::States states) -> void
+
+      # @rbs (Lrama::States states) -> Array[untyped]
+      def calculate_unused_symbols: (Lrama::States states) -> Array[untyped]
     end
   end
 end

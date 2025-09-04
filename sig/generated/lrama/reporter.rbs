@@ -4,10 +4,18 @@ module Lrama
   class Reporter
     include Lrama::Tracer::Duration
 
-    # @rbs (**bool options) -> void
-    def initialize: (**bool options) -> void
+    # @rbs (mode: Symbol, **bool options) -> void
+    def initialize: (mode: Symbol, **bool options) -> void
 
-    # @rbs (File io, Lrama::States states) -> void
-    def report: (File io, Lrama::States states) -> void
+    # @rbs (IO io, Lrama::States states) -> void
+    def report: (IO io, Lrama::States states) -> void
+
+    private
+
+    # @rbs (IO io) -> void
+    def report_html_header: (IO io) -> void
+
+    # @rbs (IO io) -> void
+    def report_html_footer: (IO io) -> void
   end
 end

@@ -3,13 +3,85 @@
 module Lrama
   class Reporter
     class States
-      # @rbs (?itemsets: bool, ?lookaheads: bool, ?solved: bool, ?counterexamples: bool, ?verbose: bool, **bool _) -> void
-      def initialize: (?itemsets: bool, ?lookaheads: bool, ?solved: bool, ?counterexamples: bool, ?verbose: bool, **bool _) -> void
+      # @rbs (?itemsets: bool, ?lookaheads: bool, ?solved: bool, ?counterexamples: bool, ?verbose: bool, ?mode: Symbol, **untyped _) -> void
+      def initialize: (?itemsets: bool, ?lookaheads: bool, ?solved: bool, ?counterexamples: bool, ?verbose: bool, ?mode: Symbol, **untyped _) -> void
 
       # @rbs (IO io, Lrama::States states, ielr: bool) -> void
       def report: (IO io, Lrama::States states, ielr: bool) -> void
 
       private
+
+      # @rbs (IO io, Lrama::States states, ielr: bool, cex: Lrama::Counterexamples?) -> void
+      def report_html: (IO io, Lrama::States states, ielr: bool, cex: Lrama::Counterexamples?) -> void
+
+      # @rbs (IO io, Array[Lrama::State] states) -> void
+      def report_split_states_html: (IO io, Array[Lrama::State] states) -> void
+
+      # @rbs (IO io, Lrama::State state) -> void
+      def report_items_html: (IO io, Lrama::State state) -> void
+
+      # @rbs (IO io, Lrama::State state) -> void
+      def report_conflicts_html: (IO io, Lrama::State state) -> void
+
+      # @rbs (IO io, Lrama::State state) -> void
+      def report_shifts_html: (IO io, Lrama::State state) -> void
+
+      # @rbs (IO io, Lrama::State state) -> void
+      def report_nonassoc_errors_html: (IO io, Lrama::State state) -> void
+
+      # @rbs (IO io, Lrama::State state) -> void
+      def report_reduces_html: (IO io, Lrama::State state) -> void
+
+      # @rbs (IO io, Lrama::State state) -> void
+      def report_nterm_transitions_html: (IO io, Lrama::State state) -> void
+
+      # @rbs (IO io, Lrama::State state) -> void
+      def report_conflict_resolutions_html: (IO io, Lrama::State state) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::Counterexamples?) -> void
+      def report_counterexamples_html: (IO io, Lrama::State state, Lrama::Counterexamples?) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_verbose_info_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_direct_read_sets_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_reads_relation_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_read_sets_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_includes_relation_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_lookback_relation_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_follow_sets_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
+      def report_look_ahead_sets_html: (IO io, Lrama::State state, Lrama::States states) -> void
+
+      # @rbs (Lrama::State state, Lrama::State::ShiftReduceConflict conflict) -> String
+      def format_shift_reduce_conflict_detail: (Lrama::State state, Lrama::State::ShiftReduceConflict conflict) -> String
+
+      # @rbs (Lrama::Grammar::Symbol symbol) -> String
+      def format_symbol_html: (Lrama::Grammar::Symbol symbol) -> String
+
+      # @rbs (Lrama::State state) -> String
+      def link_to_state_html: (Lrama::State state) -> String
+
+      # @rbs (Lrama::Grammar::Rule rule, String text) -> String
+      def link_to_rule_html: (Lrama::Grammar::Rule rule, String text) -> String
+
+      # @rbs (Lrama::State::Item item, ?with_rule_id: bool, ?with_position: bool) -> String
+      def format_item_html: (Lrama::State::Item item, ?with_rule_id: bool, ?with_position: bool) -> String
+
+      # @rbs (IO io, Lrama::States states, ielr: bool, cex: Lrama::Counterexamples?) -> void
+      def report_text: (IO io, Lrama::States states, ielr: bool, cex: Lrama::Counterexamples?) -> void
 
       # @rbs (IO io, Array[Lrama::State] states) -> void
       def report_split_states: (IO io, Array[Lrama::State] states) -> void
@@ -38,8 +110,8 @@ module Lrama
       # @rbs (IO io, Lrama::State state) -> void
       def report_conflict_resolutions: (IO io, Lrama::State state) -> void
 
-      # @rbs (IO io, Lrama::State state, Lrama::Counterexamples cex) -> void
-      def report_counterexamples: (IO io, Lrama::State state, Lrama::Counterexamples cex) -> void
+      # @rbs (IO io, Lrama::State state, Lrama::Counterexamples? cex) -> void
+      def report_counterexamples: (IO io, Lrama::State state, Lrama::Counterexamples? cex) -> void
 
       # @rbs (IO io, Lrama::State state, Lrama::States states) -> void
       def report_verbose_info: (IO io, Lrama::State state, Lrama::States states) -> void

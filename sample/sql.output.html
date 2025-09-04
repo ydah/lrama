@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parser Generator Output</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1;
+      color: #333;
+      background-color: #fdfdfd;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1024px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    h1, h2, h3 {
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    h1 { color: #1a1a1a; }
+    h2 { color: #3a3a3a; }
+    h3 {
+      color: #4a4a4a;
+      font-family: "Menlo", "Monaco", "Courier New", Courier, monospace;
+      background-color: #f0f8ff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border-left: 5px solid #4682b4;
+      margin-top: 40px;
+    }
+    pre, .code-block {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      overflow-x: auto;
+      font-family: "Menlo", "Monaco", "Courier New", Courier, monospace;
+      font-size: 0.9em;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .state-block { margin-bottom: 30px; }
+    a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    a:hover { text-decoration: underline; }
+    .conflict { color: #dc3545; font-weight: bold; }
+    .conflict-detail {
+      background-color: #fbe9e7;
+      border: 1px solid #ffab91;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+    .action { color: #28a745; font-weight: bold; }
+    .token { color: #17a2b8; }
+    .non-terminal { color: #6f42c1; }
+    .grammar-list li {
+      font-family: "Menlo", "Monaco", "Courier New", Courier, monospace;
+      margin-bottom: 5px;
+      background-color: #f8f9fa;
+      padding: 5px 10px;
+      border-radius: 3px;
+    }
+    .debug-info { color: #6c757d; }
+    .debug-header { color: #495057; font-weight: bold; }
+    .summary-box { padding: 5px 15px; }
+    .summary-box h3 {
+      color: #3a3a3a;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      padding-bottom: 0;
+      border-bottom: none;
+      background-color: transparent;
+      border-left: none;
+      font-size: 1.1em;
+    }
+    .summary-box ul {
+      margin-top: 0;
+      margin-bottom: 10px;
+      list-style-position: inside;
+      padding-left: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Parser Generator Output</h1>
+<div id="summary">
+  <h2>Summary</h2>
+  <div class="code-block summary-box">
+        <h3>Conflicts</h3>
+        <ul>
+          <li><span class="conflict"><a href="#state-28">State 28</a> conflicts: 2 shift/reduce</span></li>
+          <li><span class="conflict"><a href="#state-48">State 48</a> conflicts: 2 shift/reduce</span></li>
+          <li><span class="conflict"><a href="#state-49">State 49</a> conflicts: 2 shift/reduce</span></li>
+        </ul>
+        <h3>Statistics</h3>
+        <ul>
+          <li>35 Terms</li>
+          <li>11 Non-Terminals</li>
+          <li>13 Unused Terms</li>
+        </ul>
+  </div>
+</div>
+<div id="rule-usage">
+  <h2>Rule Usage Frequency</h2>
+  <pre>
+   0 column_reference (8 times)
+   1 condition (7 times)
+   2 ID (6 times)
+   3 literal (6 times)
+   4 AS (2 times)
+   5 COMMA (2 times)
+   6 column_list (2 times)
+   7 table_list (2 times)
+   8 table_reference (2 times)
+   9 AND (1 times)
+   10 EQ (1 times)
+   11 FLOAT (1 times)
+   12 FROM (1 times)
+   13 GE (1 times)
+   14 GT (1 times)
+   15 INTEGER (1 times)
+   16 LE (1 times)
+   17 LPAREN (1 times)
+   18 LT (1 times)
+   19 NE (1 times)
+   20 NOT (1 times)
+   21 OR (1 times)
+   22 RPAREN (1 times)
+   23 SELECT (1 times)
+   24 SEMICOLON (1 times)
+   25 STRING_LITERAL (1 times)
+   26 WHERE (1 times)
+   27 YYEOF (1 times)
+   28 expr (1 times)
+   29 select_stmt (1 times)
+   30 sql_stmt (1 times)
+   31 where_clause (1 times)
+  </pre>
+</div>
+<div id="grammar">
+  <h2>Grammar</h2>
+  <ol start="0" class="grammar-list">
+    <li id="rule-0"><span class="non-terminal">$accept</span>: <span class="non-terminal">sql_stmt</span> <span class="token">"end of file"</span></li>
+    <li id="rule-1"><span class="non-terminal">sql_stmt</span>: <span class="non-terminal">select_stmt</span> <span class="token">SEMICOLON</span></li>
+    <li id="rule-2"><span class="non-terminal">select_stmt</span>: <span class="token">SELECT</span> <span class="non-terminal">column_list</span> <span class="token">FROM</span> <span class="non-terminal">table_list</span> <span class="non-terminal">where_clause</span></li>
+    <li id="rule-3"><span class="non-terminal">column_list</span>: <span class="non-terminal">column_reference</span></li>
+    <li id="rule-4"><span class="non-terminal">column_list</span>: <span class="non-terminal">column_list</span> <span class="token">COMMA</span> <span class="non-terminal">column_reference</span></li>
+    <li id="rule-5"><span class="non-terminal">column_reference</span>: <span class="token">ID</span></li>
+    <li id="rule-6"><span class="non-terminal">column_reference</span>: <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></li>
+    <li id="rule-7"><span class="non-terminal">table_list</span>: <span class="non-terminal">table_reference</span></li>
+    <li id="rule-8"><span class="non-terminal">table_list</span>: <span class="non-terminal">table_list</span> <span class="token">COMMA</span> <span class="non-terminal">table_reference</span></li>
+    <li id="rule-9"><span class="non-terminal">table_reference</span>: <span class="token">ID</span></li>
+    <li id="rule-10"><span class="non-terminal">table_reference</span>: <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></li>
+    <li id="rule-11"><span class="non-terminal">where_clause</span>: &epsilon;</li>
+    <li id="rule-12"><span class="non-terminal">where_clause</span>: <span class="token">WHERE</span> <span class="non-terminal">condition</span></li>
+    <li id="rule-13"><span class="non-terminal">condition</span>: <span class="non-terminal">expr</span></li>
+    <li id="rule-14"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span></li>
+    <li id="rule-15"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span></li>
+    <li id="rule-16"><span class="non-terminal">condition</span>: <span class="token">NOT</span> <span class="non-terminal">condition</span></li>
+    <li id="rule-17"><span class="non-terminal">condition</span>: <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span></li>
+    <li id="rule-18"><span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span></li>
+    <li id="rule-19"><span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span></li>
+    <li id="rule-20"><span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span></li>
+    <li id="rule-21"><span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span></li>
+    <li id="rule-22"><span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span></li>
+    <li id="rule-23"><span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span></li>
+    <li id="rule-24"><span class="non-terminal">literal</span>: <span class="token">INTEGER</span></li>
+    <li id="rule-25"><span class="non-terminal">literal</span>: <span class="token">FLOAT</span></li>
+    <li id="rule-26"><span class="non-terminal">literal</span>: <span class="token">STRING_LITERAL</span></li>
+  </ol>
+</div>
+<div id="states">
+  <h2>State Machine</h2>
+
+  <div id="state-0" class="state-block">
+    <h3>State 0</h3>
+    <pre>    0 <span class="non-terminal">$accept</span>: &bull; <span class="non-terminal">sql_stmt</span> <span class="token">"end of file"</span>
+    1 <span class="non-terminal">sql_stmt</span>: &bull; <span class="non-terminal">select_stmt</span> <span class="token">SEMICOLON</span>
+    2 <span class="non-terminal">select_stmt</span>: &bull; <span class="token">SELECT</span> <span class="non-terminal">column_list</span> <span class="token">FROM</span> <span class="non-terminal">table_list</span> <span class="non-terminal">where_clause</span>
+
+   <span class="token">SELECT</span>     <span class="action">shift</span>, and <a href="#state-1">go to state 1</a>
+
+   <span class="non-terminal">sql_stmt</span>      <a href="#state-2">go to state 2</a>
+   <span class="non-terminal">select_stmt</span>   <a href="#state-3">go to state 3</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">sql_stmt</span>  shift <span class="token">"end of file"</span>
+   read <span class="non-terminal">select_stmt</span>  shift <span class="token">SEMICOLON</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">"end of file"</span>
+   <span class="token">SEMICOLON</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">sql_stmt</span> -&gt; <span class="token">"end of file"</span>
+   <span class="non-terminal">select_stmt</span> -&gt; <span class="token">SEMICOLON</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-1" class="state-block">
+    <h3>State 1</h3>
+    <pre>    2 <span class="non-terminal">select_stmt</span>: <span class="token">SELECT</span> &bull; <span class="non-terminal">column_list</span> <span class="token">FROM</span> <span class="non-terminal">table_list</span> <span class="non-terminal">where_clause</span>
+    3 <span class="non-terminal">column_list</span>: &bull; <span class="non-terminal">column_reference</span>
+    4            | &bull; <span class="non-terminal">column_list</span> <span class="token">COMMA</span> <span class="non-terminal">column_reference</span>
+    5 <span class="non-terminal">column_reference</span>: &bull; <span class="token">ID</span>
+    6                 | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+
+   <span class="token">ID</span>     <span class="action">shift</span>, and <a href="#state-4">go to state 4</a>
+
+   <span class="non-terminal">column_list</span>        <a href="#state-5">go to state 5</a>
+   <span class="non-terminal">column_reference</span>   <a href="#state-6">go to state 6</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">column_list</span>  shift <span class="token">FROM</span>, <span class="token">COMMA</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">FROM</span>
+   <span class="token">COMMA</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-1">State 1</a>, <span class="non-terminal">column_reference</span>) -&gt; (<a href="#state-1">State 1</a>, <span class="non-terminal">column_list</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">column_list</span> -&gt; <span class="token">FROM</span>
+   <span class="non-terminal">column_list</span> -&gt; <span class="token">COMMA</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">FROM</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">COMMA</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-2" class="state-block">
+    <h3>State 2</h3>
+    <pre>    0 <span class="non-terminal">$accept</span>: <span class="non-terminal">sql_stmt</span> &bull; <span class="token">"end of file"</span>
+
+   <span class="token">"end of file"</span>     <span class="action">shift</span>, and <a href="#state-7">go to state 7</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-3" class="state-block">
+    <h3>State 3</h3>
+    <pre>    1 <span class="non-terminal">sql_stmt</span>: <span class="non-terminal">select_stmt</span> &bull; <span class="token">SEMICOLON</span>
+
+   <span class="token">SEMICOLON</span>     <span class="action">shift</span>, and <a href="#state-8">go to state 8</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-4" class="state-block">
+    <h3>State 4</h3>
+    <pre>    5 <span class="non-terminal">column_reference</span>: <span class="token">ID</span> &bull;  [<span class="token">FROM</span>, <span class="token">EQ</span>, <span class="token">NE</span>, <span class="token">LT</span>, <span class="token">GT</span>, <span class="token">LE</span>, <span class="token">GE</span>, <span class="token">COMMA</span>]
+    6                 | <span class="token">ID</span> &bull; <span class="token">AS</span> <span class="token">ID</span>
+
+   <span class="token">AS</span>     <span class="action">shift</span>, and <a href="#state-9">go to state 9</a>
+
+   $default  <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-5"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-1">State 1</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-5"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-11">State 11</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-5"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-5"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-5"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-5"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-5"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">column_reference</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">FROM</span>      <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">EQ</span>        <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">NE</span>        <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">LT</span>        <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">GT</span>        <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">LE</span>        <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">GE</span>        <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">COMMA</span>     <span class="action">reduce</span> using <a href="#rule-5">rule 5 (<span class="non-terminal">column_reference</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-5" class="state-block">
+    <h3>State 5</h3>
+    <pre>    2 <span class="non-terminal">select_stmt</span>: <span class="token">SELECT</span> <span class="non-terminal">column_list</span> &bull; <span class="token">FROM</span> <span class="non-terminal">table_list</span> <span class="non-terminal">where_clause</span>
+    4 <span class="non-terminal">column_list</span>: <span class="non-terminal">column_list</span> &bull; <span class="token">COMMA</span> <span class="non-terminal">column_reference</span>
+
+   <span class="token">FROM</span>      <span class="action">shift</span>, and <a href="#state-10">go to state 10</a>
+   <span class="token">COMMA</span>     <span class="action">shift</span>, and <a href="#state-11">go to state 11</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-6" class="state-block">
+    <h3>State 6</h3>
+    <pre>    3 <span class="non-terminal">column_list</span>: <span class="non-terminal">column_reference</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-3">rule 3 (<span class="non-terminal">column_list</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-3"><span class="non-terminal">column_list</span> -&gt; <span class="non-terminal">column_reference</span></a>) -&gt; (<a href="#state-1">State 1</a>, <span class="non-terminal">column_list</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">FROM</span>      <span class="action">reduce</span> using <a href="#rule-3">rule 3 (<span class="non-terminal">column_list</span>)</a>
+   <span class="token">COMMA</span>     <span class="action">reduce</span> using <a href="#rule-3">rule 3 (<span class="non-terminal">column_list</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-7" class="state-block">
+    <h3>State 7</h3>
+    <pre>    0 <span class="non-terminal">$accept</span>: <span class="non-terminal">sql_stmt</span> <span class="token">"end of file"</span> &bull;
+
+   $default  <span class="action">accept</span>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-8" class="state-block">
+    <h3>State 8</h3>
+    <pre>    1 <span class="non-terminal">sql_stmt</span>: <span class="non-terminal">select_stmt</span> <span class="token">SEMICOLON</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-1">rule 1 (<span class="non-terminal">sql_stmt</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-1"><span class="non-terminal">sql_stmt</span> -&gt; <span class="non-terminal">select_stmt</span> <span class="token">SEMICOLON</span></a>) -&gt; (<a href="#state-0">State 0</a>, <span class="non-terminal">sql_stmt</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">"end of file"</span>  <span class="action">reduce</span> using <a href="#rule-1">rule 1 (<span class="non-terminal">sql_stmt</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-9" class="state-block">
+    <h3>State 9</h3>
+    <pre>    6 <span class="non-terminal">column_reference</span>: <span class="token">ID</span> <span class="token">AS</span> &bull; <span class="token">ID</span>
+
+   <span class="token">ID</span>     <span class="action">shift</span>, and <a href="#state-12">go to state 12</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-10" class="state-block">
+    <h3>State 10</h3>
+    <pre>    2 <span class="non-terminal">select_stmt</span>: <span class="token">SELECT</span> <span class="non-terminal">column_list</span> <span class="token">FROM</span> &bull; <span class="non-terminal">table_list</span> <span class="non-terminal">where_clause</span>
+    7 <span class="non-terminal">table_list</span>: &bull; <span class="non-terminal">table_reference</span>
+    8           | &bull; <span class="non-terminal">table_list</span> <span class="token">COMMA</span> <span class="non-terminal">table_reference</span>
+    9 <span class="non-terminal">table_reference</span>: &bull; <span class="token">ID</span>
+   10                | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+
+   <span class="token">ID</span>     <span class="action">shift</span>, and <a href="#state-13">go to state 13</a>
+
+   <span class="non-terminal">table_list</span>        <a href="#state-14">go to state 14</a>
+   <span class="non-terminal">table_reference</span>   <a href="#state-15">go to state 15</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">table_list</span>  shift <span class="token">WHERE</span>, <span class="token">COMMA</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+   (<a href="#state-14">State 14</a>, <span class="non-terminal">where_clause</span>)
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">WHERE</span>
+   <span class="token">COMMA</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-10">State 10</a>, <span class="non-terminal">table_list</span>) -&gt; (<a href="#state-0">State 0</a>, <span class="non-terminal">select_stmt</span>)
+   (<a href="#state-10">State 10</a>, <span class="non-terminal">table_reference</span>) -&gt; (<a href="#state-10">State 10</a>, <span class="non-terminal">table_list</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">table_list</span> -&gt; <span class="token">WHERE</span>
+   <span class="non-terminal">table_list</span> -&gt; <span class="token">COMMA</span>
+   <span class="non-terminal">table_list</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">table_reference</span> -&gt; <span class="token">WHERE</span>
+   <span class="non-terminal">table_reference</span> -&gt; <span class="token">COMMA</span>
+   <span class="non-terminal">table_reference</span> -&gt; <span class="token">SEMICOLON</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-11" class="state-block">
+    <h3>State 11</h3>
+    <pre>    4 <span class="non-terminal">column_list</span>: <span class="non-terminal">column_list</span> <span class="token">COMMA</span> &bull; <span class="non-terminal">column_reference</span>
+    5 <span class="non-terminal">column_reference</span>: &bull; <span class="token">ID</span>
+    6                 | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+
+   <span class="token">ID</span>     <span class="action">shift</span>, and <a href="#state-4">go to state 4</a>
+
+   <span class="non-terminal">column_reference</span>   <a href="#state-16">go to state 16</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-11">State 11</a>, <span class="non-terminal">column_reference</span>) -&gt; (<a href="#state-1">State 1</a>, <span class="non-terminal">column_list</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">FROM</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">COMMA</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-12" class="state-block">
+    <h3>State 12</h3>
+    <pre>    6 <span class="non-terminal">column_reference</span>: <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-6"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-1">State 1</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-6"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-11">State 11</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-6"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-6"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-6"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-6"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">column_reference</span>)
+   (Rule: <a href="#rule-6"><span class="non-terminal">column_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">column_reference</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">FROM</span>      <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">EQ</span>        <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">NE</span>        <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">LT</span>        <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">GT</span>        <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">LE</span>        <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">GE</span>        <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+   <span class="token">COMMA</span>     <span class="action">reduce</span> using <a href="#rule-6">rule 6 (<span class="non-terminal">column_reference</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-13" class="state-block">
+    <h3>State 13</h3>
+    <pre>    9 <span class="non-terminal">table_reference</span>: <span class="token">ID</span> &bull;  [<span class="token">WHERE</span>, <span class="token">COMMA</span>, <span class="token">SEMICOLON</span>]
+   10                | <span class="token">ID</span> &bull; <span class="token">AS</span> <span class="token">ID</span>
+
+   <span class="token">AS</span>     <span class="action">shift</span>, and <a href="#state-17">go to state 17</a>
+
+   $default  <span class="action">reduce</span> using <a href="#rule-9">rule 9 (<span class="non-terminal">table_reference</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-9"><span class="non-terminal">table_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-10">State 10</a>, <span class="non-terminal">table_reference</span>)
+   (Rule: <a href="#rule-9"><span class="non-terminal">table_reference</span> -&gt; <span class="token">ID</span></a>) -&gt; (<a href="#state-19">State 19</a>, <span class="non-terminal">table_reference</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">WHERE</span>         <span class="action">reduce</span> using <a href="#rule-9">rule 9 (<span class="non-terminal">table_reference</span>)</a>
+   <span class="token">COMMA</span>         <span class="action">reduce</span> using <a href="#rule-9">rule 9 (<span class="non-terminal">table_reference</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-9">rule 9 (<span class="non-terminal">table_reference</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-14" class="state-block">
+    <h3>State 14</h3>
+    <pre>    2 <span class="non-terminal">select_stmt</span>: <span class="token">SELECT</span> <span class="non-terminal">column_list</span> <span class="token">FROM</span> <span class="non-terminal">table_list</span> &bull; <span class="non-terminal">where_clause</span>
+    8 <span class="non-terminal">table_list</span>: <span class="non-terminal">table_list</span> &bull; <span class="token">COMMA</span> <span class="non-terminal">table_reference</span>
+   11 <span class="non-terminal">where_clause</span>: &epsilon; &bull;  [<span class="token">SEMICOLON</span>]
+   12             | &bull; <span class="token">WHERE</span> <span class="non-terminal">condition</span>
+
+   <span class="token">WHERE</span>     <span class="action">shift</span>, and <a href="#state-18">go to state 18</a>
+   <span class="token">COMMA</span>     <span class="action">shift</span>, and <a href="#state-19">go to state 19</a>
+
+   $default  <span class="action">reduce</span> using <a href="#rule-11">rule 11 (<span class="non-terminal">where_clause</span>)</a>
+
+   <span class="non-terminal">where_clause</span>   <a href="#state-20">go to state 20</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-14">State 14</a>, <span class="non-terminal">where_clause</span>) -&gt; (<a href="#state-0">State 0</a>, <span class="non-terminal">select_stmt</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-11"><span class="non-terminal">where_clause</span> -&gt; &epsilon;</a>) -&gt; (<a href="#state-14">State 14</a>, <span class="non-terminal">where_clause</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">where_clause</span> -&gt; <span class="token">SEMICOLON</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-11">rule 11 (<span class="non-terminal">where_clause</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-15" class="state-block">
+    <h3>State 15</h3>
+    <pre>    7 <span class="non-terminal">table_list</span>: <span class="non-terminal">table_reference</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-7">rule 7 (<span class="non-terminal">table_list</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-7"><span class="non-terminal">table_list</span> -&gt; <span class="non-terminal">table_reference</span></a>) -&gt; (<a href="#state-10">State 10</a>, <span class="non-terminal">table_list</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">WHERE</span>         <span class="action">reduce</span> using <a href="#rule-7">rule 7 (<span class="non-terminal">table_list</span>)</a>
+   <span class="token">COMMA</span>         <span class="action">reduce</span> using <a href="#rule-7">rule 7 (<span class="non-terminal">table_list</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-7">rule 7 (<span class="non-terminal">table_list</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-16" class="state-block">
+    <h3>State 16</h3>
+    <pre>    4 <span class="non-terminal">column_list</span>: <span class="non-terminal">column_list</span> <span class="token">COMMA</span> <span class="non-terminal">column_reference</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-4">rule 4 (<span class="non-terminal">column_list</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-4"><span class="non-terminal">column_list</span> -&gt; <span class="non-terminal">column_list</span> <span class="token">COMMA</span> <span class="non-terminal">column_reference</span></a>) -&gt; (<a href="#state-1">State 1</a>, <span class="non-terminal">column_list</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">FROM</span>      <span class="action">reduce</span> using <a href="#rule-4">rule 4 (<span class="non-terminal">column_list</span>)</a>
+   <span class="token">COMMA</span>     <span class="action">reduce</span> using <a href="#rule-4">rule 4 (<span class="non-terminal">column_list</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-17" class="state-block">
+    <h3>State 17</h3>
+    <pre>   10 <span class="non-terminal">table_reference</span>: <span class="token">ID</span> <span class="token">AS</span> &bull; <span class="token">ID</span>
+
+   <span class="token">ID</span>     <span class="action">shift</span>, and <a href="#state-21">go to state 21</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-18" class="state-block">
+    <h3>State 18</h3>
+    <pre>    5 <span class="non-terminal">column_reference</span>: &bull; <span class="token">ID</span>
+    6                 | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+   12 <span class="non-terminal">where_clause</span>: <span class="token">WHERE</span> &bull; <span class="non-terminal">condition</span>
+   13 <span class="non-terminal">condition</span>: &bull; <span class="non-terminal">expr</span>
+   14          | &bull; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | &bull; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span>
+   16          | &bull; <span class="token">NOT</span> <span class="non-terminal">condition</span>
+   17          | &bull; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span>
+   18 <span class="non-terminal">expr</span>: &bull; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span>
+   19     | &bull; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span>
+   20     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span>
+   21     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span>
+   22     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span>
+   23     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span>
+
+   <span class="token">ID</span>         <span class="action">shift</span>, and <a href="#state-4">go to state 4</a>
+   <span class="token">NOT</span>        <span class="action">shift</span>, and <a href="#state-22">go to state 22</a>
+   <span class="token">LPAREN</span>     <span class="action">shift</span>, and <a href="#state-23">go to state 23</a>
+
+   <span class="non-terminal">column_reference</span>   <a href="#state-24">go to state 24</a>
+   <span class="non-terminal">condition</span>          <a href="#state-25">go to state 25</a>
+   <span class="non-terminal">expr</span>               <a href="#state-26">go to state 26</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">column_reference</span>  shift <span class="token">EQ</span>, <span class="token">NE</span>, <span class="token">LT</span>, <span class="token">GT</span>, <span class="token">LE</span>, <span class="token">GE</span>
+   read <span class="non-terminal">condition</span>  shift <span class="token">AND</span>, <span class="token">OR</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">EQ</span>
+   <span class="token">NE</span>
+   <span class="token">LT</span>
+   <span class="token">GT</span>
+   <span class="token">LE</span>
+   <span class="token">GE</span>
+   <span class="token">AND</span>
+   <span class="token">OR</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-14">State 14</a>, <span class="non-terminal">where_clause</span>)
+   (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">EQ</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">NE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GE</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">SEMICOLON</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-19" class="state-block">
+    <h3>State 19</h3>
+    <pre>    8 <span class="non-terminal">table_list</span>: <span class="non-terminal">table_list</span> <span class="token">COMMA</span> &bull; <span class="non-terminal">table_reference</span>
+    9 <span class="non-terminal">table_reference</span>: &bull; <span class="token">ID</span>
+   10                | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+
+   <span class="token">ID</span>     <span class="action">shift</span>, and <a href="#state-13">go to state 13</a>
+
+   <span class="non-terminal">table_reference</span>   <a href="#state-27">go to state 27</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-19">State 19</a>, <span class="non-terminal">table_reference</span>) -&gt; (<a href="#state-10">State 10</a>, <span class="non-terminal">table_list</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">table_reference</span> -&gt; <span class="token">WHERE</span>
+   <span class="non-terminal">table_reference</span> -&gt; <span class="token">COMMA</span>
+   <span class="non-terminal">table_reference</span> -&gt; <span class="token">SEMICOLON</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-20" class="state-block">
+    <h3>State 20</h3>
+    <pre>    2 <span class="non-terminal">select_stmt</span>: <span class="token">SELECT</span> <span class="non-terminal">column_list</span> <span class="token">FROM</span> <span class="non-terminal">table_list</span> <span class="non-terminal">where_clause</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-2">rule 2 (<span class="non-terminal">select_stmt</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-2"><span class="non-terminal">select_stmt</span> -&gt; <span class="token">SELECT</span> <span class="non-terminal">column_list</span> <span class="token">FROM</span> <span class="non-terminal">table_list</span> <span class="non-terminal">where_clause</span></a>) -&gt; (<a href="#state-0">State 0</a>, <span class="non-terminal">select_stmt</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-2">rule 2 (<span class="non-terminal">select_stmt</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-21" class="state-block">
+    <h3>State 21</h3>
+    <pre>   10 <span class="non-terminal">table_reference</span>: <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-10">rule 10 (<span class="non-terminal">table_reference</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-10"><span class="non-terminal">table_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-10">State 10</a>, <span class="non-terminal">table_reference</span>)
+   (Rule: <a href="#rule-10"><span class="non-terminal">table_reference</span> -&gt; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span></a>) -&gt; (<a href="#state-19">State 19</a>, <span class="non-terminal">table_reference</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">WHERE</span>         <span class="action">reduce</span> using <a href="#rule-10">rule 10 (<span class="non-terminal">table_reference</span>)</a>
+   <span class="token">COMMA</span>         <span class="action">reduce</span> using <a href="#rule-10">rule 10 (<span class="non-terminal">table_reference</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-10">rule 10 (<span class="non-terminal">table_reference</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-22" class="state-block">
+    <h3>State 22</h3>
+    <pre>    5 <span class="non-terminal">column_reference</span>: &bull; <span class="token">ID</span>
+    6                 | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+   13 <span class="non-terminal">condition</span>: &bull; <span class="non-terminal">expr</span>
+   14          | &bull; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | &bull; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span>
+   16          | &bull; <span class="token">NOT</span> <span class="non-terminal">condition</span>
+   16          | <span class="token">NOT</span> &bull; <span class="non-terminal">condition</span>
+   17          | &bull; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span>
+   18 <span class="non-terminal">expr</span>: &bull; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span>
+   19     | &bull; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span>
+   20     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span>
+   21     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span>
+   22     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span>
+   23     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span>
+
+   <span class="token">ID</span>         <span class="action">shift</span>, and <a href="#state-4">go to state 4</a>
+   <span class="token">NOT</span>        <span class="action">shift</span>, and <a href="#state-22">go to state 22</a>
+   <span class="token">LPAREN</span>     <span class="action">shift</span>, and <a href="#state-23">go to state 23</a>
+
+   <span class="non-terminal">column_reference</span>   <a href="#state-24">go to state 24</a>
+   <span class="non-terminal">condition</span>          <a href="#state-28">go to state 28</a>
+   <span class="non-terminal">expr</span>               <a href="#state-26">go to state 26</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">column_reference</span>  shift <span class="token">EQ</span>, <span class="token">NE</span>, <span class="token">LT</span>, <span class="token">GT</span>, <span class="token">LE</span>, <span class="token">GE</span>
+   read <span class="non-terminal">condition</span>  shift <span class="token">AND</span>, <span class="token">OR</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">EQ</span>
+   <span class="token">NE</span>
+   <span class="token">LT</span>
+   <span class="token">GT</span>
+   <span class="token">LE</span>
+   <span class="token">GE</span>
+   <span class="token">AND</span>
+   <span class="token">OR</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">EQ</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">NE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GE</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">RPAREN</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-23" class="state-block">
+    <h3>State 23</h3>
+    <pre>    5 <span class="non-terminal">column_reference</span>: &bull; <span class="token">ID</span>
+    6                 | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+   13 <span class="non-terminal">condition</span>: &bull; <span class="non-terminal">expr</span>
+   14          | &bull; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | &bull; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span>
+   16          | &bull; <span class="token">NOT</span> <span class="non-terminal">condition</span>
+   17          | &bull; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span>
+   17          | <span class="token">LPAREN</span> &bull; <span class="non-terminal">condition</span> <span class="token">RPAREN</span>
+   18 <span class="non-terminal">expr</span>: &bull; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span>
+   19     | &bull; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span>
+   20     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span>
+   21     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span>
+   22     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span>
+   23     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span>
+
+   <span class="token">ID</span>         <span class="action">shift</span>, and <a href="#state-4">go to state 4</a>
+   <span class="token">NOT</span>        <span class="action">shift</span>, and <a href="#state-22">go to state 22</a>
+   <span class="token">LPAREN</span>     <span class="action">shift</span>, and <a href="#state-23">go to state 23</a>
+
+   <span class="non-terminal">column_reference</span>   <a href="#state-24">go to state 24</a>
+   <span class="non-terminal">condition</span>          <a href="#state-29">go to state 29</a>
+   <span class="non-terminal">expr</span>               <a href="#state-26">go to state 26</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">column_reference</span>  shift <span class="token">EQ</span>, <span class="token">NE</span>, <span class="token">LT</span>, <span class="token">GT</span>, <span class="token">LE</span>, <span class="token">GE</span>
+   read <span class="non-terminal">condition</span>  shift <span class="token">AND</span>, <span class="token">OR</span>, <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">EQ</span>
+   <span class="token">NE</span>
+   <span class="token">LT</span>
+   <span class="token">GT</span>
+   <span class="token">LE</span>
+   <span class="token">GE</span>
+   <span class="token">AND</span>
+   <span class="token">OR</span>
+   <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">EQ</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">NE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GE</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">RPAREN</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-24" class="state-block">
+    <h3>State 24</h3>
+    <pre>   18 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> &bull; <span class="token">EQ</span> <span class="non-terminal">literal</span>
+   19     | <span class="non-terminal">column_reference</span> &bull; <span class="token">NE</span> <span class="non-terminal">literal</span>
+   20     | <span class="non-terminal">column_reference</span> &bull; <span class="token">LT</span> <span class="non-terminal">literal</span>
+   21     | <span class="non-terminal">column_reference</span> &bull; <span class="token">GT</span> <span class="non-terminal">literal</span>
+   22     | <span class="non-terminal">column_reference</span> &bull; <span class="token">LE</span> <span class="non-terminal">literal</span>
+   23     | <span class="non-terminal">column_reference</span> &bull; <span class="token">GE</span> <span class="non-terminal">literal</span>
+
+   <span class="token">EQ</span>     <span class="action">shift</span>, and <a href="#state-30">go to state 30</a>
+   <span class="token">NE</span>     <span class="action">shift</span>, and <a href="#state-31">go to state 31</a>
+   <span class="token">LT</span>     <span class="action">shift</span>, and <a href="#state-32">go to state 32</a>
+   <span class="token">GT</span>     <span class="action">shift</span>, and <a href="#state-33">go to state 33</a>
+   <span class="token">LE</span>     <span class="action">shift</span>, and <a href="#state-34">go to state 34</a>
+   <span class="token">GE</span>     <span class="action">shift</span>, and <a href="#state-35">go to state 35</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-25" class="state-block">
+    <h3>State 25</h3>
+    <pre>   12 <span class="non-terminal">where_clause</span>: <span class="token">WHERE</span> <span class="non-terminal">condition</span> &bull;  [<span class="token">SEMICOLON</span>]
+   14 <span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span>
+
+   <span class="token">AND</span>     <span class="action">shift</span>, and <a href="#state-36">go to state 36</a>
+   <span class="token">OR</span>      <span class="action">shift</span>, and <a href="#state-37">go to state 37</a>
+
+   $default  <span class="action">reduce</span> using <a href="#rule-12">rule 12 (<span class="non-terminal">where_clause</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-12"><span class="non-terminal">where_clause</span> -&gt; <span class="token">WHERE</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-14">State 14</a>, <span class="non-terminal">where_clause</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-12">rule 12 (<span class="non-terminal">where_clause</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-26" class="state-block">
+    <h3>State 26</h3>
+    <pre>   13 <span class="non-terminal">condition</span>: <span class="non-terminal">expr</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-13">rule 13 (<span class="non-terminal">condition</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-13"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">expr</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-13"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">expr</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-13"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">expr</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-13"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">expr</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-13"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">expr</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-13">rule 13 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-13">rule 13 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-13">rule 13 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-13">rule 13 (<span class="non-terminal">condition</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-27" class="state-block">
+    <h3>State 27</h3>
+    <pre>    8 <span class="non-terminal">table_list</span>: <span class="non-terminal">table_list</span> <span class="token">COMMA</span> <span class="non-terminal">table_reference</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-8">rule 8 (<span class="non-terminal">table_list</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-8"><span class="non-terminal">table_list</span> -&gt; <span class="non-terminal">table_list</span> <span class="token">COMMA</span> <span class="non-terminal">table_reference</span></a>) -&gt; (<a href="#state-10">State 10</a>, <span class="non-terminal">table_list</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">WHERE</span>         <span class="action">reduce</span> using <a href="#rule-8">rule 8 (<span class="non-terminal">table_list</span>)</a>
+   <span class="token">COMMA</span>         <span class="action">reduce</span> using <a href="#rule-8">rule 8 (<span class="non-terminal">table_list</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-8">rule 8 (<span class="non-terminal">table_list</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-28" class="state-block">
+    <h3>State 28</h3>
+    <pre>   14 <span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span>
+   16          | <span class="token">NOT</span> <span class="non-terminal">condition</span> &bull;  [<span class="token">AND</span>, <span class="token">OR</span>, <span class="token">SEMICOLON</span>, <span class="token">RPAREN</span>]
+
+   <span class="conflict">Conflict on <span class="token">AND</span>. shift/reduce(<span class="non-terminal">condition</span>)</span>
+   <span class="conflict">Conflict on <span class="token">OR</span>. shift/reduce(<span class="non-terminal">condition</span>)</span>
+
+<div class="conflict-detail">   shift/reduce conflict on token <span class="token">AND</span>:
+     <a href="#rule-14"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span></a>
+     <a href="#rule-16"><span class="non-terminal">condition</span>: <span class="token">NOT</span> <span class="non-terminal">condition</span> &bull;</a>
+   shift/reduce conflict on token <span class="token">OR</span>:
+     <a href="#rule-15"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span></a>
+     <a href="#rule-16"><span class="non-terminal">condition</span>: <span class="token">NOT</span> <span class="non-terminal">condition</span> &bull;</a></div>   <span class="token">AND</span>     <span class="action">shift</span>, and <a href="#state-36">go to state 36</a>
+   <span class="token">OR</span>      <span class="action">shift</span>, and <a href="#state-37">go to state 37</a>
+
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-16"><span class="non-terminal">condition</span> -&gt; <span class="token">NOT</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-16"><span class="non-terminal">condition</span> -&gt; <span class="token">NOT</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-16"><span class="non-terminal">condition</span> -&gt; <span class="token">NOT</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-16"><span class="non-terminal">condition</span> -&gt; <span class="token">NOT</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-16"><span class="non-terminal">condition</span> -&gt; <span class="token">NOT</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-16">rule 16 (<span class="non-terminal">condition</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-29" class="state-block">
+    <h3>State 29</h3>
+    <pre>   14 <span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span>
+   17          | <span class="token">LPAREN</span> <span class="non-terminal">condition</span> &bull; <span class="token">RPAREN</span>
+
+   <span class="token">AND</span>        <span class="action">shift</span>, and <a href="#state-36">go to state 36</a>
+   <span class="token">OR</span>         <span class="action">shift</span>, and <a href="#state-37">go to state 37</a>
+   <span class="token">RPAREN</span>     <span class="action">shift</span>, and <a href="#state-38">go to state 38</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-30" class="state-block">
+    <h3>State 30</h3>
+    <pre>   18 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">EQ</span> &bull; <span class="non-terminal">literal</span>
+   24 <span class="non-terminal">literal</span>: &bull; <span class="token">INTEGER</span>
+   25        | &bull; <span class="token">FLOAT</span>
+   26        | &bull; <span class="token">STRING_LITERAL</span>
+
+   <span class="token">STRING_LITERAL</span>     <span class="action">shift</span>, and <a href="#state-39">go to state 39</a>
+   <span class="token">INTEGER</span>            <span class="action">shift</span>, and <a href="#state-40">go to state 40</a>
+   <span class="token">FLOAT</span>              <span class="action">shift</span>, and <a href="#state-41">go to state 41</a>
+
+   <span class="non-terminal">literal</span>   <a href="#state-42">go to state 42</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-31" class="state-block">
+    <h3>State 31</h3>
+    <pre>   19 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">NE</span> &bull; <span class="non-terminal">literal</span>
+   24 <span class="non-terminal">literal</span>: &bull; <span class="token">INTEGER</span>
+   25        | &bull; <span class="token">FLOAT</span>
+   26        | &bull; <span class="token">STRING_LITERAL</span>
+
+   <span class="token">STRING_LITERAL</span>     <span class="action">shift</span>, and <a href="#state-39">go to state 39</a>
+   <span class="token">INTEGER</span>            <span class="action">shift</span>, and <a href="#state-40">go to state 40</a>
+   <span class="token">FLOAT</span>              <span class="action">shift</span>, and <a href="#state-41">go to state 41</a>
+
+   <span class="non-terminal">literal</span>   <a href="#state-43">go to state 43</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-32" class="state-block">
+    <h3>State 32</h3>
+    <pre>   20 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">LT</span> &bull; <span class="non-terminal">literal</span>
+   24 <span class="non-terminal">literal</span>: &bull; <span class="token">INTEGER</span>
+   25        | &bull; <span class="token">FLOAT</span>
+   26        | &bull; <span class="token">STRING_LITERAL</span>
+
+   <span class="token">STRING_LITERAL</span>     <span class="action">shift</span>, and <a href="#state-39">go to state 39</a>
+   <span class="token">INTEGER</span>            <span class="action">shift</span>, and <a href="#state-40">go to state 40</a>
+   <span class="token">FLOAT</span>              <span class="action">shift</span>, and <a href="#state-41">go to state 41</a>
+
+   <span class="non-terminal">literal</span>   <a href="#state-44">go to state 44</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-33" class="state-block">
+    <h3>State 33</h3>
+    <pre>   21 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">GT</span> &bull; <span class="non-terminal">literal</span>
+   24 <span class="non-terminal">literal</span>: &bull; <span class="token">INTEGER</span>
+   25        | &bull; <span class="token">FLOAT</span>
+   26        | &bull; <span class="token">STRING_LITERAL</span>
+
+   <span class="token">STRING_LITERAL</span>     <span class="action">shift</span>, and <a href="#state-39">go to state 39</a>
+   <span class="token">INTEGER</span>            <span class="action">shift</span>, and <a href="#state-40">go to state 40</a>
+   <span class="token">FLOAT</span>              <span class="action">shift</span>, and <a href="#state-41">go to state 41</a>
+
+   <span class="non-terminal">literal</span>   <a href="#state-45">go to state 45</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-34" class="state-block">
+    <h3>State 34</h3>
+    <pre>   22 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">LE</span> &bull; <span class="non-terminal">literal</span>
+   24 <span class="non-terminal">literal</span>: &bull; <span class="token">INTEGER</span>
+   25        | &bull; <span class="token">FLOAT</span>
+   26        | &bull; <span class="token">STRING_LITERAL</span>
+
+   <span class="token">STRING_LITERAL</span>     <span class="action">shift</span>, and <a href="#state-39">go to state 39</a>
+   <span class="token">INTEGER</span>            <span class="action">shift</span>, and <a href="#state-40">go to state 40</a>
+   <span class="token">FLOAT</span>              <span class="action">shift</span>, and <a href="#state-41">go to state 41</a>
+
+   <span class="non-terminal">literal</span>   <a href="#state-46">go to state 46</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-35" class="state-block">
+    <h3>State 35</h3>
+    <pre>   23 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">GE</span> &bull; <span class="non-terminal">literal</span>
+   24 <span class="non-terminal">literal</span>: &bull; <span class="token">INTEGER</span>
+   25        | &bull; <span class="token">FLOAT</span>
+   26        | &bull; <span class="token">STRING_LITERAL</span>
+
+   <span class="token">STRING_LITERAL</span>     <span class="action">shift</span>, and <a href="#state-39">go to state 39</a>
+   <span class="token">INTEGER</span>            <span class="action">shift</span>, and <a href="#state-40">go to state 40</a>
+   <span class="token">FLOAT</span>              <span class="action">shift</span>, and <a href="#state-41">go to state 41</a>
+
+   <span class="non-terminal">literal</span>   <a href="#state-47">go to state 47</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">literal</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-36" class="state-block">
+    <h3>State 36</h3>
+    <pre>    5 <span class="non-terminal">column_reference</span>: &bull; <span class="token">ID</span>
+    6                 | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+   13 <span class="non-terminal">condition</span>: &bull; <span class="non-terminal">expr</span>
+   14          | &bull; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span>
+   14          | <span class="non-terminal">condition</span> <span class="token">AND</span> &bull; <span class="non-terminal">condition</span>
+   15          | &bull; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span>
+   16          | &bull; <span class="token">NOT</span> <span class="non-terminal">condition</span>
+   17          | &bull; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span>
+   18 <span class="non-terminal">expr</span>: &bull; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span>
+   19     | &bull; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span>
+   20     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span>
+   21     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span>
+   22     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span>
+   23     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span>
+
+   <span class="token">ID</span>         <span class="action">shift</span>, and <a href="#state-4">go to state 4</a>
+   <span class="token">NOT</span>        <span class="action">shift</span>, and <a href="#state-22">go to state 22</a>
+   <span class="token">LPAREN</span>     <span class="action">shift</span>, and <a href="#state-23">go to state 23</a>
+
+   <span class="non-terminal">column_reference</span>   <a href="#state-24">go to state 24</a>
+   <span class="non-terminal">condition</span>          <a href="#state-48">go to state 48</a>
+   <span class="non-terminal">expr</span>               <a href="#state-26">go to state 26</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">column_reference</span>  shift <span class="token">EQ</span>, <span class="token">NE</span>, <span class="token">LT</span>, <span class="token">GT</span>, <span class="token">LE</span>, <span class="token">GE</span>
+   read <span class="non-terminal">condition</span>  shift <span class="token">AND</span>, <span class="token">OR</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">EQ</span>
+   <span class="token">NE</span>
+   <span class="token">LT</span>
+   <span class="token">GT</span>
+   <span class="token">LE</span>
+   <span class="token">GE</span>
+   <span class="token">AND</span>
+   <span class="token">OR</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">EQ</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">NE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GE</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">RPAREN</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-37" class="state-block">
+    <h3>State 37</h3>
+    <pre>    5 <span class="non-terminal">column_reference</span>: &bull; <span class="token">ID</span>
+    6                 | &bull; <span class="token">ID</span> <span class="token">AS</span> <span class="token">ID</span>
+   13 <span class="non-terminal">condition</span>: &bull; <span class="non-terminal">expr</span>
+   14          | &bull; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | &bull; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span>
+   15          | <span class="non-terminal">condition</span> <span class="token">OR</span> &bull; <span class="non-terminal">condition</span>
+   16          | &bull; <span class="token">NOT</span> <span class="non-terminal">condition</span>
+   17          | &bull; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span>
+   18 <span class="non-terminal">expr</span>: &bull; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span>
+   19     | &bull; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span>
+   20     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span>
+   21     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span>
+   22     | &bull; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span>
+   23     | &bull; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span>
+
+   <span class="token">ID</span>         <span class="action">shift</span>, and <a href="#state-4">go to state 4</a>
+   <span class="token">NOT</span>        <span class="action">shift</span>, and <a href="#state-22">go to state 22</a>
+   <span class="token">LPAREN</span>     <span class="action">shift</span>, and <a href="#state-23">go to state 23</a>
+
+   <span class="non-terminal">column_reference</span>   <a href="#state-24">go to state 24</a>
+   <span class="non-terminal">condition</span>          <a href="#state-49">go to state 49</a>
+   <span class="non-terminal">expr</span>               <a href="#state-26">go to state 26</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+   read <span class="non-terminal">column_reference</span>  shift <span class="token">EQ</span>, <span class="token">NE</span>, <span class="token">LT</span>, <span class="token">GT</span>, <span class="token">LE</span>, <span class="token">GE</span>
+   read <span class="non-terminal">condition</span>  shift <span class="token">AND</span>, <span class="token">OR</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+   <span class="token">EQ</span>
+   <span class="token">NE</span>
+   <span class="token">LT</span>
+   <span class="token">GT</span>
+   <span class="token">LE</span>
+   <span class="token">GE</span>
+   <span class="token">AND</span>
+   <span class="token">OR</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+   (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+   (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Lookback Relation]</span>
+
+ <span class="debug-header">[Follow sets]</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">EQ</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">NE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GT</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">LE</span>
+   <span class="non-terminal">column_reference</span> -&gt; <span class="token">GE</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">condition</span> -&gt; <span class="token">RPAREN</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">AND</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">OR</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">SEMICOLON</span>
+   <span class="non-terminal">expr</span> -&gt; <span class="token">RPAREN</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+</span></pre>
+  </div>
+
+  <div id="state-38" class="state-block">
+    <h3>State 38</h3>
+    <pre>   17 <span class="non-terminal">condition</span>: <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-17">rule 17 (<span class="non-terminal">condition</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-17"><span class="non-terminal">condition</span> -&gt; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-17"><span class="non-terminal">condition</span> -&gt; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-17"><span class="non-terminal">condition</span> -&gt; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-17"><span class="non-terminal">condition</span> -&gt; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-17"><span class="non-terminal">condition</span> -&gt; <span class="token">LPAREN</span> <span class="non-terminal">condition</span> <span class="token">RPAREN</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-17">rule 17 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-17">rule 17 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-17">rule 17 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-17">rule 17 (<span class="non-terminal">condition</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-39" class="state-block">
+    <h3>State 39</h3>
+    <pre>   26 <span class="non-terminal">literal</span>: <span class="token">STRING_LITERAL</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-26">rule 26 (<span class="non-terminal">literal</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-26"><span class="non-terminal">literal</span> -&gt; <span class="token">STRING_LITERAL</span></a>) -&gt; (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-26"><span class="non-terminal">literal</span> -&gt; <span class="token">STRING_LITERAL</span></a>) -&gt; (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-26"><span class="non-terminal">literal</span> -&gt; <span class="token">STRING_LITERAL</span></a>) -&gt; (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-26"><span class="non-terminal">literal</span> -&gt; <span class="token">STRING_LITERAL</span></a>) -&gt; (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-26"><span class="non-terminal">literal</span> -&gt; <span class="token">STRING_LITERAL</span></a>) -&gt; (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-26"><span class="non-terminal">literal</span> -&gt; <span class="token">STRING_LITERAL</span></a>) -&gt; (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-26">rule 26 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-26">rule 26 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-26">rule 26 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-26">rule 26 (<span class="non-terminal">literal</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-40" class="state-block">
+    <h3>State 40</h3>
+    <pre>   24 <span class="non-terminal">literal</span>: <span class="token">INTEGER</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-24">rule 24 (<span class="non-terminal">literal</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-24"><span class="non-terminal">literal</span> -&gt; <span class="token">INTEGER</span></a>) -&gt; (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-24"><span class="non-terminal">literal</span> -&gt; <span class="token">INTEGER</span></a>) -&gt; (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-24"><span class="non-terminal">literal</span> -&gt; <span class="token">INTEGER</span></a>) -&gt; (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-24"><span class="non-terminal">literal</span> -&gt; <span class="token">INTEGER</span></a>) -&gt; (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-24"><span class="non-terminal">literal</span> -&gt; <span class="token">INTEGER</span></a>) -&gt; (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-24"><span class="non-terminal">literal</span> -&gt; <span class="token">INTEGER</span></a>) -&gt; (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-24">rule 24 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-24">rule 24 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-24">rule 24 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-24">rule 24 (<span class="non-terminal">literal</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-41" class="state-block">
+    <h3>State 41</h3>
+    <pre>   25 <span class="non-terminal">literal</span>: <span class="token">FLOAT</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-25">rule 25 (<span class="non-terminal">literal</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-25"><span class="non-terminal">literal</span> -&gt; <span class="token">FLOAT</span></a>) -&gt; (<a href="#state-30">State 30</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-25"><span class="non-terminal">literal</span> -&gt; <span class="token">FLOAT</span></a>) -&gt; (<a href="#state-31">State 31</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-25"><span class="non-terminal">literal</span> -&gt; <span class="token">FLOAT</span></a>) -&gt; (<a href="#state-32">State 32</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-25"><span class="non-terminal">literal</span> -&gt; <span class="token">FLOAT</span></a>) -&gt; (<a href="#state-33">State 33</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-25"><span class="non-terminal">literal</span> -&gt; <span class="token">FLOAT</span></a>) -&gt; (<a href="#state-34">State 34</a>, <span class="non-terminal">literal</span>)
+   (Rule: <a href="#rule-25"><span class="non-terminal">literal</span> -&gt; <span class="token">FLOAT</span></a>) -&gt; (<a href="#state-35">State 35</a>, <span class="non-terminal">literal</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-25">rule 25 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-25">rule 25 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-25">rule 25 (<span class="non-terminal">literal</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-25">rule 25 (<span class="non-terminal">literal</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-42" class="state-block">
+    <h3>State 42</h3>
+    <pre>   18 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-18">rule 18 (<span class="non-terminal">expr</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-18"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-18"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-18"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-18"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-18"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">EQ</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-18">rule 18 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-18">rule 18 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-18">rule 18 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-18">rule 18 (<span class="non-terminal">expr</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-43" class="state-block">
+    <h3>State 43</h3>
+    <pre>   19 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-19">rule 19 (<span class="non-terminal">expr</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-19"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-19"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-19"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-19"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-19"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">NE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-19">rule 19 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-19">rule 19 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-19">rule 19 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-19">rule 19 (<span class="non-terminal">expr</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-44" class="state-block">
+    <h3>State 44</h3>
+    <pre>   20 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-20">rule 20 (<span class="non-terminal">expr</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-20"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-20"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-20"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-20"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-20"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-20">rule 20 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-20">rule 20 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-20">rule 20 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-20">rule 20 (<span class="non-terminal">expr</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-45" class="state-block">
+    <h3>State 45</h3>
+    <pre>   21 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-21">rule 21 (<span class="non-terminal">expr</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-21"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-21"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-21"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-21"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-21"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GT</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-21">rule 21 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-21">rule 21 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-21">rule 21 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-21">rule 21 (<span class="non-terminal">expr</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-46" class="state-block">
+    <h3>State 46</h3>
+    <pre>   22 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-22">rule 22 (<span class="non-terminal">expr</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-22"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-22"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-22"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-22"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-22"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">LE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-22">rule 22 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-22">rule 22 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-22">rule 22 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-22">rule 22 (<span class="non-terminal">expr</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-47" class="state-block">
+    <h3>State 47</h3>
+    <pre>   23 <span class="non-terminal">expr</span>: <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span> &bull;
+
+   $default  <span class="action">reduce</span> using <a href="#rule-23">rule 23 (<span class="non-terminal">expr</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-23"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-23"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-23"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-23"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">expr</span>)
+   (Rule: <a href="#rule-23"><span class="non-terminal">expr</span> -&gt; <span class="non-terminal">column_reference</span> <span class="token">GE</span> <span class="non-terminal">literal</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">expr</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-23">rule 23 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-23">rule 23 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-23">rule 23 (<span class="non-terminal">expr</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-23">rule 23 (<span class="non-terminal">expr</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-48" class="state-block">
+    <h3>State 48</h3>
+    <pre>   14 <span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span>
+   14          | <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span> &bull;  [<span class="token">AND</span>, <span class="token">OR</span>, <span class="token">SEMICOLON</span>, <span class="token">RPAREN</span>]
+   15          | <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span>
+
+   <span class="conflict">Conflict on <span class="token">AND</span>. shift/reduce(<span class="non-terminal">condition</span>)</span>
+   <span class="conflict">Conflict on <span class="token">OR</span>. shift/reduce(<span class="non-terminal">condition</span>)</span>
+
+<div class="conflict-detail">   shift/reduce conflict on token <span class="token">AND</span>:
+     <a href="#rule-14"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span></a>
+     <a href="#rule-14"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span> &bull;</a>
+   shift/reduce conflict on token <span class="token">OR</span>:
+     <a href="#rule-15"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span></a>
+     <a href="#rule-14"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span> &bull;</a></div>   <span class="token">AND</span>     <span class="action">shift</span>, and <a href="#state-36">go to state 36</a>
+   <span class="token">OR</span>      <span class="action">shift</span>, and <a href="#state-37">go to state 37</a>
+
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-14"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-14"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-14"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-14"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-14"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">AND</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-14">rule 14 (<span class="non-terminal">condition</span>)</a>
+
+</span></pre>
+  </div>
+
+  <div id="state-49" class="state-block">
+    <h3>State 49</h3>
+    <pre>   14 <span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span>
+   15          | <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span>
+   15          | <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span> &bull;  [<span class="token">AND</span>, <span class="token">OR</span>, <span class="token">SEMICOLON</span>, <span class="token">RPAREN</span>]
+
+   <span class="conflict">Conflict on <span class="token">AND</span>. shift/reduce(<span class="non-terminal">condition</span>)</span>
+   <span class="conflict">Conflict on <span class="token">OR</span>. shift/reduce(<span class="non-terminal">condition</span>)</span>
+
+<div class="conflict-detail">   shift/reduce conflict on token <span class="token">AND</span>:
+     <a href="#rule-14"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">AND</span> <span class="non-terminal">condition</span></a>
+     <a href="#rule-15"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span> &bull;</a>
+   shift/reduce conflict on token <span class="token">OR</span>:
+     <a href="#rule-15"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> &bull; <span class="token">OR</span> <span class="non-terminal">condition</span></a>
+     <a href="#rule-15"><span class="non-terminal">condition</span>: <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span> &bull;</a></div>   <span class="token">AND</span>     <span class="action">shift</span>, and <a href="#state-36">go to state 36</a>
+   <span class="token">OR</span>      <span class="action">shift</span>, and <a href="#state-37">go to state 37</a>
+
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+
+
+<span class="debug-info"> <span class="debug-header">[Direct Read sets]</span>
+
+ <span class="debug-header">[Reads Relation]</span>
+
+ <span class="debug-header">[Read sets]</span>
+
+ <span class="debug-header">[Includes Relation]</span>
+
+ <span class="debug-header">[Lookback Relation]</span>
+   (Rule: <a href="#rule-15"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-18">State 18</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-15"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-22">State 22</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-15"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-23">State 23</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-15"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-36">State 36</a>, <span class="non-terminal">condition</span>)
+   (Rule: <a href="#rule-15"><span class="non-terminal">condition</span> -&gt; <span class="non-terminal">condition</span> <span class="token">OR</span> <span class="non-terminal">condition</span></a>) -&gt; (<a href="#state-37">State 37</a>, <span class="non-terminal">condition</span>)
+
+ <span class="debug-header">[Follow sets]</span>
+
+ <span class="debug-header">[Look-Ahead Sets]</span>
+   <span class="token">AND</span>           <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">OR</span>            <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">SEMICOLON</span>     <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+   <span class="token">RPAREN</span>        <span class="action">reduce</span> using <a href="#rule-15">rule 15 (<span class="non-terminal">condition</span>)</a>
+
+</span></pre>
+  </div>
+
+</div>
+  </div>
+</body>
+</html>

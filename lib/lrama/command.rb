@@ -32,7 +32,7 @@ module Lrama
       states, context = compute_status(grammar)
       render_reports(states) if @options.report_file
       @tracer.trace(grammar)
-      render_diagram(grammar)
+      render_diagram(grammar, states)
       render_output(context, grammar)
       states.validate!(@logger)
       @warnings.warn(grammar, states)
@@ -94,12 +94,36 @@ module Lrama
       end
     end
 
-    def render_diagram(grammar)
+    def render_diagram(grammar, states)
       return unless @options.diagram
 
-      File.open(@options.diagram_file, "w+") do |f|
-        Lrama::Diagram.render(out: f, grammar: grammar)
+      case @options.diagram
+      when 'railroad'
+        render_railroad_diagram(grammar)
+      when 'states'
+        render_states_diagram(states)
+      when 'all'
+        render_railroad_diagram(grammar)
+        render_states_diagram(states)
       end
+    end
+
+    def render_railroad_diagram(grammar)
+      file = @options.diagram_file
+      file = file.sub(/\.[^.]+$/, '') + '_railroad.html' if @options.diagram == 'all'
+
+      File.open(file, "w+") do |f|
+        Lrama::Diagram.render_railroad(out: f, grammar: grammar)
+      end
+    end
+
+    def render_states_diagram(states)
+      file = @options.diagram_file
+      if @options.diagram == 'all'
+        file = file.sub(/(\.[^.]+)$/, '_states\1')
+      end
+
+      Lrama::Diagram.render_states_to_file(states, file, name: "LALR(1) Automaton")
     end
 
     def render_output(context, grammar)

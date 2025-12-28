@@ -1,0 +1,38 @@
+# Generated from lib/lrama/diagram/railroad.rb with RBS::Inline
+
+module Lrama
+  class Diagram
+    class Railroad
+      attr_reader grammar: untyped
+
+      # @rbs (Grammar grammar) -> void
+      def initialize: (Grammar grammar) -> void
+
+      # @rbs () -> bool
+      def self.available?: () -> bool
+
+      # @rbs () -> void
+      def self.require!: () -> void
+
+      # @rbs (out: IO, template_name: String) -> void
+      def render: (out: IO, template_name: String) -> void
+
+      # @rbs () -> string
+      def default_style: () -> string
+
+      # @rbs () -> string
+      def diagrams: () -> string
+
+      private
+
+      # @rbs () -> string
+      def template_dir: () -> string
+
+      # @rbs (String name) -> string
+      def template_file: (String name) -> string
+
+      # @rbs (String name, RailroadDiagrams::Diagram diagram, String result) -> void
+      def add_diagram: (String name, RailroadDiagrams::Diagram diagram, String result) -> void
+    end
+  end
+end

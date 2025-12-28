@@ -60,7 +60,8 @@ RSpec.describe Lrama::OptionParser do
                   --report-file=FILE           also produce details on the automaton output to a file named FILE
               -o, --output=FILE                leave output to FILE
                   --trace=TRACES               also output trace logs at runtime
-                  --diagram=[FILE]             generate a diagram of the rules
+                  --diagram[=TYPE]             generate diagram(s): railroad, states, or all (default: railroad)
+                  --diagram-file=FILE          specify output file for diagram (default: diagram.html)
                   --profile=PROFILES           profiles parser generation parts
               -v, --verbose                    same as '--report=state'
 
@@ -210,6 +211,36 @@ RSpec.describe Lrama::OptionParser do
     describe "invalid options are passed" do
       it "returns option hash" do
         expect { option_parser.send(:validate_trace, ["invalid"]) }.to raise_error(/Invalid trace option/)
+      end
+    end
+  end
+
+  describe "#validate_diagram" do
+    let(:option_parser) { Lrama::OptionParser.new }
+
+    context "when no options are passed" do
+      it "returns nil" do
+        opts = option_parser.send(:validate_diagram, nil)
+        expect(opts).to be_nil
+      end
+    end
+
+    context "when valid options are passed" do
+      it "returns the diagram type" do
+        opts = option_parser.send(:validate_diagram, "railroad")
+        expect(opts).to eq("railroad")
+
+        opts = option_parser.send(:validate_diagram, "states")
+        expect(opts).to eq("states")
+
+        opts = option_parser.send(:validate_diagram, "all")
+        expect(opts).to eq("all")
+      end
+    end
+
+    context "when invalid options are passed" do
+      it "raises error" do
+        expect { option_parser.send(:validate_diagram, "invalid") }.to raise_error(/Invalid diagram type/)
       end
     end
   end

@@ -1,0 +1,29 @@
+# Generated from lib/lrama/diagram/states.rb with RBS::Inline
+
+module Lrama
+  class Diagram
+    class States
+      attr_reader states: untyped
+
+      # @rbs (Lrama::States states) -> void
+      def initialize: (Lrama::States states) -> void
+
+      # @rbs () -> bool
+      def self.available?: () -> bool
+
+      # @rbs () -> void
+      def self.require!: () -> void
+
+      # @rbs (format: Symbol, **Hash[Symbol, untyped]) -> String
+      def render: (format: Symbol, **Hash[Symbol, untyped]) -> String
+
+      # @rbs (String, **Hash[Symbol, untyped]) -> String
+      def render_to_file: (String, **Hash[Symbol, untyped]) -> String
+
+      private
+
+      # @rbs (name: String?) -> Automograph::Model
+      def build_model: (name: String?) -> Automograph::Model
+    end
+  end
+end

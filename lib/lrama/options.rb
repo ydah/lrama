@@ -18,7 +18,7 @@ module Lrama
     attr_accessor :y #: IO
     attr_accessor :debug #: bool
     attr_accessor :define #: Hash[String, String]
-    attr_accessor :diagram #: bool
+    attr_accessor :diagram #: String?
     attr_accessor :diagram_file #: String
     attr_accessor :profile_opts #: Hash[Symbol, bool]?
 
@@ -38,7 +38,7 @@ module Lrama
       @warnings = false
       @y = STDIN
       @debug = false
-      @diagram = false
+      @diagram = "railroad"
       @diagram_file = "diagram.html"
       @profile_opts = nil
     end

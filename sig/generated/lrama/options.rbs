@@ -31,7 +31,7 @@ module Lrama
 
     attr_accessor define: Hash[String, String]
 
-    attr_accessor diagram: bool
+    attr_accessor diagram: String?
 
     attr_accessor diagram_file: String
 

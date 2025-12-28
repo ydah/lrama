@@ -2,33 +2,19 @@
 
 module Lrama
   class Diagram
-    # @rbs (IO out, Grammar grammar, String template_name) -> void
-    def self.render: (IO out, Grammar grammar, String template_name) -> void
+    # @rbs (out: IO, grammar: Grammar, template_name: String) -> void
+    def self.render_railroad: (out: IO, grammar: Grammar, template_name: String) -> void
+
+    # @rbs (Lrama::States, format: Symbol, **Hash[Symbol, untyped]) -> String?
+    def self.render_states: (Lrama::States, format: Symbol, **Hash[Symbol, untyped]) -> String?
+
+    # @rbs (Lrama::States, String, **Hash[Symbol, untyped]) -> String?
+    def self.render_states_to_file: (Lrama::States, String, **Hash[Symbol, untyped]) -> String?
 
     # @rbs () -> bool
     def self.require_railroad_diagrams: () -> bool
 
-    # @rbs (IO out, Grammar grammar, String template_name) -> void
-    def initialize: (IO out, Grammar grammar, String template_name) -> void
-
-    # @rbs () -> void
-    def render: () -> void
-
-    # @rbs () -> string
-    def default_style: () -> string
-
-    # @rbs () -> string
-    def diagrams: () -> string
-
-    private
-
-    # @rbs () -> string
-    def template_dir: () -> string
-
-    # @rbs () -> string
-    def template_file: () -> string
-
-    # @rbs (String name, RailroadDiagrams::Diagram diagram, String result) -> void
-    def add_diagram: (String name, RailroadDiagrams::Diagram diagram, String result) -> void
+    # @rbs () -> bool
+    def self.require_state_diagram: () -> bool
   end
 end

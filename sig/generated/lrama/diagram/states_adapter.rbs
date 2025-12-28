@@ -1,0 +1,35 @@
+# Generated from lib/lrama/diagram/states_adapter.rb with RBS::Inline
+
+module Lrama
+  class Diagram
+    class StatesAdapter
+      attr_reader states: untyped
+
+      # @rbs (Lrama::States) -> void
+      def initialize: (Lrama::States) -> void
+
+      # @rbs (name: String?) -> Automograph::Model
+      def build: (name: String?) -> Automograph::Model
+
+      private
+
+      # @rbs (Automograph::Model) -> void
+      def build_states: (Automograph::Model) -> void
+
+      # @rbs (Automograph::Model) -> void
+      def build_transitions: (Automograph::Model) -> void
+
+      # @rbs (Lrama::State) -> bool
+      def accepting_state?: (Lrama::State) -> bool
+
+      # @rbs (Lrama::State) -> String
+      def format_items: (Lrama::State) -> String
+
+      # @rbs (Lrama::State::Item) -> String
+      def format_item: (Lrama::State::Item) -> String
+
+      # @rbs (Lrama::State) -> Array[Hash[Symbol, untyped]]
+      def detect_conflicts: (Lrama::State) -> Array[Hash[Symbol, untyped]]
+    end
+  end
+end

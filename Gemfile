@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem "automograph", "0.1.0"
 gem "memory_profiler"
 gem "pry"
 gem "racc", "1.8.1"

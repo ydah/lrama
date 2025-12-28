@@ -39,9 +39,13 @@ Lrama (pronounced in the same way as the noun “llama” in English) is LALR (1
 * Inlining
   * The %inline directive causes all references to symbols to be replaced with its definition.
   * Resolve shift/reduce conflicts without artificially altering the grammar file.
-* Syntax Diagrams
+* Syntax Diagrams (Railroad Diagrams)
   * Easily generate syntax diagrams from the grammar file.
   * These visual diagrams are an useful development tool for grammar development and can also function as automatic self-documentation.
+* State Transition Diagrams
+  * Visualize LALR(1) automaton state transitions with LR items.
+  * Supports multiple output formats: HTML (Mermaid.js), Mermaid, GraphViz DOT, and PlantUML.
+  * Interactive HTML output with state search and detail inspection.
 
 ## Installation
 

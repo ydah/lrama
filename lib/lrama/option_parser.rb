@@ -11,6 +11,7 @@ module Lrama
     #   @trace: Array[String]
     #   @report: Array[String]
     #   @profile: Array[String]
+    #   @diagram: String?
 
     # @rbs (Array[String]) -> Lrama::Options
     def self.parse(argv)
@@ -23,6 +24,7 @@ module Lrama
       @trace = []
       @report = []
       @profile = []
+      @diagram = nil
     end
 
     # @rbs (Array[String]) -> Lrama::Options
@@ -32,6 +34,7 @@ module Lrama
       @options.trace_opts = validate_trace(@trace)
       @options.report_opts = validate_report(@report)
       @options.profile_opts = validate_profile(@profile)
+      @options.diagram = validate_diagram(@diagram)
       @options.grammar_file = argv.shift
 
       unless @options.grammar_file
@@ -115,10 +118,8 @@ module Lrama
         o.on_tail '    time                             display generation time'
         o.on_tail '    all                              include all the above traces'
         o.on_tail '    none                             disable all traces'
-        o.on('--diagram=[FILE]', 'generate a diagram of the rules') do |v|
-          @options.diagram = true
-          @options.diagram_file = v if v
-        end
+        o.on('--diagram[=TYPE]', 'generate diagram(s): railroad, states, or all (default: railroad)') { |v| @diagram = v }
+        o.on('--diagram-file=FILE', 'specify output file for diagram (default: diagram.html)') { |v| @options.diagram_file = v }
         o.on('--profile=PROFILES', Array, 'profiles parser generation parts') {|v| @profile = v }
         o.on_tail ''
         o.on_tail 'PROFILES is a list of comma-separated words that can include:'
@@ -218,6 +219,19 @@ module Lrama
       end
 
       return h
+    end
+
+    VALID_DIAGRAMS = %w[railroad states all].freeze #: Array[String]
+
+    # @rbs (String?) -> String?
+    def validate_diagram(diagram)
+      return nil if diagram.nil?
+
+      unless VALID_DIAGRAMS.include?(diagram)
+        raise "Invalid diagram type \"#{diagram}\".\nValid options are [#{VALID_DIAGRAMS.join(", ")}]."
+      end
+
+      diagram
     end
   end
 end

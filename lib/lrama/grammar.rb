@@ -114,6 +114,12 @@ module Lrama
     attr_reader :lex_prec #: Grammar::LexPrec
     attr_reader :lexer_contexts #: Hash[String, Grammar::LexerContext]
 
+    # Argument symbol names for each parameterized rule expansion.
+    # @rbs () -> Hash[String, Array[String]]
+    def parameterized_expansion_args
+      @parameterized_resolver.expansion_args
+    end
+
     def_delegators "@symbols_resolver", :symbols, :nterms, :terms, :add_nterm, :add_term, :find_term_by_s_value,
                                         :find_symbol_by_number!, :find_symbol_by_id!, :token_to_symbol,
                                         :find_symbol_by_s_value!, :fill_symbol_number, :fill_nterm_type,

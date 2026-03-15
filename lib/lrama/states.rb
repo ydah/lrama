@@ -260,7 +260,10 @@ module Lrama
     def classify_lexer_contexts
       return if @grammar.lexer_contexts.empty?
 
-      @lexer_context_classifier = LexerContextClassifier.new(@grammar.lexer_contexts)
+      @lexer_context_classifier = LexerContextClassifier.new(
+        @grammar.lexer_contexts,
+        @grammar.parameterized_expansion_args
+      )
 
       @states.each do |state|
         groups = @lexer_context_classifier.classify(state)

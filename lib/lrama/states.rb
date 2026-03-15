@@ -258,7 +258,9 @@ module Lrama
     #
     # @rbs () -> void
     def classify_lexer_contexts
-      @lexer_context_classifier = LexerContextClassifier.new
+      return if @grammar.lexer_contexts.empty?
+
+      @lexer_context_classifier = LexerContextClassifier.new(@grammar.lexer_contexts)
 
       @states.each do |state|
         groups = @lexer_context_classifier.classify(state)

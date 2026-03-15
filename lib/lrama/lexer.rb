@@ -45,6 +45,7 @@ module Lrama
       %printer
       %destructor
       %lex-param
+      %lexer-context
       %lex-prec
       %parse-param
       %initial-action

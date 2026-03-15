@@ -740,25 +740,26 @@ module Lrama
       return "" unless lexer_context_enabled?
 
       table = @context.states.lexer_context_table
+      classifier = @context.states.lexer_context_classifier
+      lexer_contexts = @grammar.lexer_contexts
       lines = []
 
       lines << "/* Lexer Context Classification Table */"
       lines << "/* Maps parser state -> lexer context flags */"
       lines << ""
-      lines << "#ifndef YY_CTX_BEG"
-      lines << "#define YY_CTX_BEG    0x01"
-      lines << "#define YY_CTX_CMDARG 0x02"
-      lines << "#define YY_CTX_ARG    0x04"
-      lines << "#define YY_CTX_END    0x08"
-      lines << "#define YY_CTX_ENDFN  0x10"
-      lines << "#define YY_CTX_MID    0x20"
-      lines << "#define YY_CTX_DOT    0x40"
-      lines << "#endif"
+
+      # Generate #define for each context from grammar definitions
+      first_ctx = classifier.contexts.first
+      lines << "#ifndef YY_CTX_#{first_ctx.name}" if first_ctx
+      classifier.contexts.each do |lc|
+        lines << "#define YY_CTX_%-8s 0x%02x" % [lc.name, lc.bitmask]
+      end
+      lines << "#endif" if first_ctx
       lines << ""
       lines << "static const unsigned char yy_lexer_context[] = {"
 
       table.each_with_index do |ctx, idx|
-        ctx_name = LexerContextClassifier.context_name(ctx)
+        ctx_name = LexerContextClassifier.context_name(ctx, lexer_contexts)
         comma = idx < table.size - 1 ? "," : ""
         lines << "  /* state #{idx} */ #{ctx}#{comma} /* #{ctx_name} */"
       end

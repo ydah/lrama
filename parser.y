@@ -133,6 +133,7 @@ rule
   symbol_declaration:
       "%token" token_declarations
     | "%token-pattern" token_pattern_declarations
+    | "%lexer-context" lexer_context_declaration
     | "%lex-prec" lex_prec_declarations
     | "%type" symbol_declarations
         {
@@ -245,6 +246,12 @@ rule
       IDENTIFIER REGEX alias
         {
           result = { id: val[0], pattern: val[1], alias: val[2] }
+        }
+
+  lexer_context_declaration:
+      IDENTIFIER symbol+
+        {
+          @grammar.add_lexer_context(name: val[0].s_value, symbols: val[1])
         }
 
   lex_prec_declarations:

@@ -336,18 +336,26 @@ RSpec.describe Lrama::Output do
       end
 
       context "when lexer context is enabled" do
+        let(:lexer_contexts) do
+          lcs = {}
+          lcs["BEG"] = Lrama::Grammar::LexerContext.new(name: "BEG", index: 0)
+          lcs["END"] = Lrama::Grammar::LexerContext.new(name: "END", index: 1)
+          lcs
+        end
+
+        let(:classifier) { Lrama::LexerContextClassifier.new(lexer_contexts) }
+
         before do
           allow(mock_states).to receive(:lexer_context_enabled?).and_return(true)
-          allow(mock_states).to receive(:lexer_context_table).and_return([0x01, 0x08, 0x02, 0x10])
+          allow(mock_states).to receive(:lexer_context_table).and_return([0x01, 0x02, 0x01, 0x00])
+          allow(mock_states).to receive(:lexer_context_classifier).and_return(classifier)
+          allow(mock_grammar).to receive(:lexer_contexts).and_return(lexer_contexts)
         end
 
         it "generates the C context table" do
           result = pslr_output.lexer_context_table_code
           expect(result).to include("YY_CTX_BEG")
-          expect(result).to include("YY_CTX_CMDARG")
           expect(result).to include("YY_CTX_END")
-          expect(result).to include("YY_CTX_ENDFN")
-          expect(result).to include("YY_CTX_DOT")
           expect(result).to include("yy_lexer_context")
           expect(result).to include("yy_lexer_context_is")
           expect(result).to include("/* state 0 */")

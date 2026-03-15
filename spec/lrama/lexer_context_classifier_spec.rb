@@ -3,62 +3,149 @@
 RSpec.describe Lrama::LexerContextClassifier do
   include PslrFamilyHelper
 
-  let(:classifier) { described_class.new }
+  # Helper to build a classifier with standard CRuby-like contexts
+  def build_classifier_with_contexts
+    lexer_contexts = {}
+    [
+      ["BEG", %w[keyword_if keyword_unless keyword_while keyword_do tPLUS tMINUS tLPAREN tLBRACK tLBRACE]],
+      ["CMDARG", %w[tIDENTIFIER tFID tCONSTANT]],
+      ["END", %w[tINTEGER tFLOAT tSTRING_END keyword_end tRPAREN tRBRACK tRBRACE]],
+      ["ENDFN", %w[keyword_def]],
+      ["DOT", %w[tDOT tCOLON2 tANDDOT]],
+    ].each_with_index do |(name, syms), idx|
+      lc = Lrama::Grammar::LexerContext.new(name: name, index: idx)
+      syms.each do |s|
+        lc.add_symbols([double("token", s_value: s)])
+      end
+      lexer_contexts[name] = lc
+    end
+    described_class.new(lexer_contexts)
+  end
 
-  describe "context constants" do
-    it "defines non-overlapping bitmask flags" do
-      flags = [
-        described_class::BEG,
-        described_class::CMDARG,
-        described_class::ARG,
-        described_class::END_,
-        described_class::ENDFN,
-        described_class::MID,
-        described_class::DOT,
-      ]
+  describe "context bitmask assignment" do
+    it "assigns non-overlapping bitmask flags by definition order" do
+      classifier = build_classifier_with_contexts
+      bitmasks = classifier.contexts.map(&:bitmask)
 
-      # All flags should be powers of 2
-      flags.each do |flag|
-        expect(flag).to be > 0
-        expect(flag & (flag - 1)).to eq(0), "#{flag} is not a power of 2"
+      # All bitmasks should be powers of 2
+      bitmasks.each do |bm|
+        expect(bm).to be > 0
+        expect(bm & (bm - 1)).to eq(0), "#{bm} is not a power of 2"
       end
 
-      # No two flags should overlap
-      flags.combination(2).each do |a, b|
-        expect(a & b).to eq(0), "Flags #{a} and #{b} overlap"
+      # No two should overlap
+      bitmasks.combination(2).each do |a, b|
+        expect(a & b).to eq(0), "Bitmasks #{a} and #{b} overlap"
       end
     end
   end
 
   describe ".context_name" do
+    let(:lexer_contexts) do
+      lcs = {}
+      lc = Lrama::Grammar::LexerContext.new(name: "BEG", index: 0)
+      lcs["BEG"] = lc
+      lc2 = Lrama::Grammar::LexerContext.new(name: "CMDARG", index: 1)
+      lcs["CMDARG"] = lc2
+      lcs
+    end
+
     it "returns UNKNOWN for 0" do
-      expect(described_class.context_name(0)).to eq("UNKNOWN")
+      expect(described_class.context_name(0, lexer_contexts)).to eq("UNKNOWN")
     end
 
     it "returns single context name for single flag" do
-      expect(described_class.context_name(described_class::BEG)).to eq("BEG")
-      expect(described_class.context_name(described_class::CMDARG)).to eq("CMDARG")
-      expect(described_class.context_name(described_class::END_)).to eq("END")
-      expect(described_class.context_name(described_class::ENDFN)).to eq("ENDFN")
-      expect(described_class.context_name(described_class::DOT)).to eq("DOT")
+      expect(described_class.context_name(0x01, lexer_contexts)).to eq("BEG")
+      expect(described_class.context_name(0x02, lexer_contexts)).to eq("CMDARG")
     end
 
     it "returns combined name for multiple flags" do
-      combined = described_class::BEG | described_class::CMDARG
-      name = described_class.context_name(combined)
+      name = described_class.context_name(0x01 | 0x02, lexer_contexts)
       expect(name).to include("BEG")
       expect(name).to include("CMDARG")
     end
   end
 
-  describe "#classify" do
-    context "with a grammar that has distinguishable contexts" do
+  describe "#classify_symbol_context" do
+    let(:classifier) { build_classifier_with_contexts }
+
+    it "classifies operator-like terminals" do
+      %w[tPLUS tMINUS].each do |name|
+        sym = double("symbol", id: double("id", s_value: name), term?: true)
+        ctx = classifier.classify_symbol_context(sym)
+        # BEG = 1 << 0 = 0x01
+        expect(ctx).to eq(0x01), "Expected #{name} to be BEG"
+      end
+    end
+
+    it "classifies identifier terminals as CMDARG" do
+      %w[tIDENTIFIER tFID tCONSTANT].each do |name|
+        sym = double("symbol", id: double("id", s_value: name), term?: true)
+        ctx = classifier.classify_symbol_context(sym)
+        # CMDARG = 1 << 1 = 0x02
+        expect(ctx).to eq(0x02), "Expected #{name} to be CMDARG"
+      end
+    end
+
+    it "classifies literal terminals as END" do
+      %w[tINTEGER tFLOAT tSTRING_END].each do |name|
+        sym = double("symbol", id: double("id", s_value: name), term?: true)
+        ctx = classifier.classify_symbol_context(sym)
+        # END = 1 << 2 = 0x04
+        expect(ctx).to eq(0x04), "Expected #{name} to be END"
+      end
+    end
+
+    it "classifies keyword_def as ENDFN" do
+      sym = double("symbol", id: double("id", s_value: "keyword_def"), term?: true)
+      ctx = classifier.classify_symbol_context(sym)
+      # ENDFN = 1 << 3 = 0x08
+      expect(ctx).to eq(0x08)
+    end
+
+    it "classifies dot tokens as DOT" do
+      %w[tDOT tCOLON2 tANDDOT].each do |name|
+        sym = double("symbol", id: double("id", s_value: name), term?: true)
+        ctx = classifier.classify_symbol_context(sym)
+        # DOT = 1 << 4 = 0x10
+        expect(ctx).to eq(0x10), "Expected #{name} to be DOT"
+      end
+    end
+
+    it "classifies open brackets as BEG" do
+      %w[tLPAREN tLBRACK tLBRACE].each do |name|
+        sym = double("symbol", id: double("id", s_value: name), term?: true)
+        ctx = classifier.classify_symbol_context(sym)
+        expect(ctx).to eq(0x01), "Expected #{name} to be BEG"
+      end
+    end
+
+    it "classifies close brackets as END" do
+      %w[tRPAREN tRBRACK tRBRACE].each do |name|
+        sym = double("symbol", id: double("id", s_value: name), term?: true)
+        ctx = classifier.classify_symbol_context(sym)
+        expect(ctx).to eq(0x04), "Expected #{name} to be END"
+      end
+    end
+
+    it "returns 0 for unknown symbols" do
+      sym = double("symbol", id: double("id", s_value: "unknown_token"), term?: true)
+      ctx = classifier.classify_symbol_context(sym)
+      expect(ctx).to eq(0)
+    end
+  end
+
+  describe "#classify with grammar-defined contexts" do
+    context "with %lexer-context directives" do
       let(:grammar) do
         build_grammar(<<~GRAMMAR, "lexer_context/basic.y")
           %define lr.type pslr
           %token-pattern IF /if/
           %token-pattern ID /[a-z]+/
           %lex-prec IF - ID
+
+          %lexer-context BEG IF
+          %lexer-context CMDARG ID
 
           %%
 
@@ -78,7 +165,6 @@ RSpec.describe Lrama::LexerContextClassifier do
         states.compute
         states.compute_pslr
 
-        # Every state should have a lexer_context assigned
         states.states.each do |state|
           expect(state.lexer_context).not_to be_nil
         end
@@ -93,6 +179,10 @@ RSpec.describe Lrama::LexerContextClassifier do
           %token-pattern STAR /\\*/
           %token-pattern ID /[a-z]+/
           %token-pattern NUM /[0-9]+/
+
+          %lexer-context BEG PLUS STAR
+          %lexer-context CMDARG ID
+          %lexer-context END NUM
 
           %%
 
@@ -117,106 +207,14 @@ RSpec.describe Lrama::LexerContextClassifier do
         states.states.each do |state|
           expect(state.lexer_context).not_to be_nil
         end
-
-        # The initial state should have BEG context (beginning of program)
-        initial_state = states.states.first
-        expect(initial_state.lexer_context).not_to eq(0)
-      end
-    end
-
-    context "with keyword context grammar" do
-      let(:grammar) do
-        build_grammar(<<~GRAMMAR, "lexer_context/keyword.y")
-          %define lr.type pslr
-          %token-pattern P /p/
-          %token-pattern Q /q/
-          %token-pattern X /x/
-          %token-pattern IF /if/
-          %token-pattern ID /[a-z]+/
-          %lex-prec IF - ID
-
-          %%
-
-          program
-            : kw_context
-            | id_context
-            ;
-
-          kw_context
-            : P shared IF
-            ;
-
-          id_context
-            : Q shared ID
-            ;
-
-          shared
-            : X
-            ;
-        GRAMMAR
-      end
-
-      it "classifies states and provides lexer context table" do
-        states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
-        states.compute
-        states.compute_pslr
-
-        table = states.lexer_context_table
-        expect(table).to be_an(Array)
-        expect(table.size).to eq(states.states_count)
-
-        # All values should be non-negative integers
-        table.each do |ctx|
-          expect(ctx).to be_a(Integer)
-          expect(ctx).to be >= 0
-        end
-      end
-    end
-  end
-
-  describe "#infer_item_context" do
-    context "with a simple grammar" do
-      let(:grammar) do
-        build_grammar(<<~GRAMMAR, "lexer_context/infer.y")
-          %define lr.type pslr
-          %token-pattern ID /[a-z]+/
-          %token-pattern NUM /[0-9]+/
-
-          %%
-
-          program
-            : expr
-            ;
-
-          expr
-            : NUM
-            | expr '+' expr
-            ;
-        GRAMMAR
-      end
-
-      it "classifies position-0 items as BEG" do
-        states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
-        states.compute
-        states.compute_pslr
-
-        # Find items at position 0
-        states.states.each do |state|
-          state.kernels.each do |item|
-            if item.position == 0
-              ctx = classifier.infer_item_context(item)
-              expect(ctx).to eq(described_class::BEG)
-            end
-          end
-        end
       end
     end
   end
 
   describe "integration with States" do
     context "lexer_context_enabled?" do
-      it "returns false before compute_pslr" do
-        grammar = build_grammar(<<~GRAMMAR, "lexer_context/enabled.y")
+      it "returns false when no %lexer-context directives" do
+        grammar = build_grammar(<<~GRAMMAR, "lexer_context/no_ctx.y")
           %define lr.type pslr
           %token-pattern ID /[a-z]+/
 
@@ -227,14 +225,17 @@ RSpec.describe Lrama::LexerContextClassifier do
 
         states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
         states.compute
+        states.compute_pslr
 
         expect(states.lexer_context_enabled?).to eq(false)
       end
 
-      it "returns true after compute_pslr" do
-        grammar = build_grammar(<<~GRAMMAR, "lexer_context/enabled.y")
+      it "returns true when %lexer-context directives are present" do
+        grammar = build_grammar(<<~GRAMMAR, "lexer_context/with_ctx.y")
           %define lr.type pslr
           %token-pattern ID /[a-z]+/
+
+          %lexer-context BEG ID
 
           %%
 
@@ -255,6 +256,9 @@ RSpec.describe Lrama::LexerContextClassifier do
           %define lr.type pslr
           %token-pattern ID /[a-z]+/
           %token-pattern NUM /[0-9]+/
+
+          %lexer-context BEG ID
+          %lexer-context END NUM
 
           %%
 
@@ -280,154 +284,7 @@ RSpec.describe Lrama::LexerContextClassifier do
     end
   end
 
-  describe "terminal context classification" do
-    it "classifies operator-like terminals as BEG" do
-      # Operators mean we're at the beginning of the next expression
-      %w[tPLUS tMINUS tSTAR tDSTAR tAMPER tLSHFT].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: true)
-        ctx = classifier.send(:classify_terminal_context, sym)
-        expect(ctx).to eq(described_class::BEG), "Expected #{name} to be BEG, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies identifier terminals as CMDARG" do
-      %w[tIDENTIFIER tFID tCONSTANT].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: true)
-        ctx = classifier.send(:classify_terminal_context, sym)
-        expect(ctx).to eq(described_class::CMDARG), "Expected #{name} to be CMDARG, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies literal terminals as END" do
-      %w[tINTEGER tFLOAT tSTRING_END tSYMBOL].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: true)
-        ctx = classifier.send(:classify_terminal_context, sym)
-        expect(ctx).to eq(described_class::END_), "Expected #{name} to be END, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies keyword_def as ENDFN" do
-      sym = double("symbol", id: double("id", s_value: "keyword_def"), term?: true)
-      ctx = classifier.send(:classify_terminal_context, sym)
-      expect(ctx).to eq(described_class::ENDFN)
-    end
-
-    it "classifies dot tokens as DOT" do
-      %w[tDOT tCOLON2 tANDDOT].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: true)
-        ctx = classifier.send(:classify_terminal_context, sym)
-        expect(ctx).to eq(described_class::DOT), "Expected #{name} to be DOT, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies open brackets as BEG" do
-      %w[tLPAREN tLBRACK tLBRACE tLPAREN_ARG tLBRACE_ARG].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: true)
-        ctx = classifier.send(:classify_terminal_context, sym)
-        expect(ctx).to eq(described_class::BEG), "Expected #{name} to be BEG, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies close brackets as END" do
-      %w[tRPAREN tRBRACK tRBRACE].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: true)
-        ctx = classifier.send(:classify_terminal_context, sym)
-        expect(ctx).to eq(described_class::END_), "Expected #{name} to be END, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies keyword_end as END" do
-      sym = double("symbol", id: double("id", s_value: "keyword_end"), term?: true)
-      ctx = classifier.send(:classify_terminal_context, sym)
-      expect(ctx).to eq(described_class::END_)
-    end
-
-    it "classifies BEG keywords as BEG" do
-      %w[keyword_if keyword_unless keyword_while keyword_until keyword_case
-         keyword_for keyword_begin keyword_do keyword_return keyword_break
-         keyword_class keyword_module].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: true)
-        ctx = classifier.send(:classify_terminal_context, sym)
-        expect(ctx).to eq(described_class::BEG), "Expected #{name} to be BEG, got #{described_class.context_name(ctx)}"
-      end
-    end
-  end
-
-  describe "nonterminal context classification" do
-    it "classifies expression-like nonterminals as END" do
-      %w[expr arg primary literal].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: false)
-        ctx = classifier.send(:classify_nonterminal_context, sym)
-        expect(ctx).to eq(described_class::END_), "Expected #{name} to be END, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies fname-like nonterminals as ENDFN" do
-      %w[fname fsym].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: false)
-        ctx = classifier.send(:classify_nonterminal_context, sym)
-        expect(ctx).to eq(described_class::ENDFN), "Expected #{name} to be ENDFN, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies command-like nonterminals as CMDARG" do
-      %w[command fcall].each do |name|
-        sym = double("symbol", id: double("id", s_value: name), term?: false)
-        ctx = classifier.send(:classify_nonterminal_context, sym)
-        expect(ctx).to eq(described_class::CMDARG), "Expected #{name} to be CMDARG, got #{described_class.context_name(ctx)}"
-      end
-    end
-
-    it "classifies dot_or_colon as DOT" do
-      sym = double("symbol", id: double("id", s_value: "dot_or_colon"), term?: false)
-      ctx = classifier.send(:classify_nonterminal_context, sym)
-      expect(ctx).to eq(described_class::DOT)
-    end
-  end
-
   describe "context-based state splitting" do
-    context "with BEG vs CMDARG mixed context" do
-      # This grammar creates a shared nonterminal reached from both
-      # an operator context (BEG) and an identifier context (CMDARG).
-      # The LALR automaton merges these into one state.
-      # Context splitting should separate them.
-      let(:grammar) do
-        build_grammar(<<~GRAMMAR, "lexer_context/beg_vs_cmdarg.y")
-          %define lr.type pslr
-          %token-pattern tPLUS /\\+/
-          %token-pattern tIDENTIFIER /[a-z]+/
-          %token-pattern tINTEGER /[0-9]+/
-          %token-pattern keyword_if /if/
-          %lex-prec keyword_if - tIDENTIFIER
-
-          %%
-
-          program
-            : expr
-            ;
-
-          expr
-            : tINTEGER
-            | tIDENTIFIER
-            | expr tPLUS expr
-            | expr keyword_if expr
-            ;
-        GRAMMAR
-      end
-
-      it "splits mixed-context states" do
-        states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
-        states.compute
-        states.compute_pslr
-
-        # After splitting, states that were reached from both
-        # operator (BEG) and identifier (CMDARG) contexts should
-        # have been separated into distinct states
-        contexts_seen = states.states.map(&:lexer_context).uniq.reject { |c| c == 0 }
-        expect(contexts_seen).not_to be_empty
-      end
-    end
-
     context "with operator vs identifier predecessor contexts" do
       let(:grammar) do
         build_grammar(<<~GRAMMAR, "lexer_context/split_expr.y")
@@ -436,6 +293,10 @@ RSpec.describe Lrama::LexerContextClassifier do
           %token-pattern tSTAR /\\*/
           %token-pattern tIDENTIFIER /[a-z]+/
           %token-pattern tINTEGER /[0-9]+/
+
+          %lexer-context BEG tPLUS tSTAR
+          %lexer-context CMDARG tIDENTIFIER
+          %lexer-context END tINTEGER
 
           %%
 
@@ -479,10 +340,14 @@ RSpec.describe Lrama::LexerContextClassifier do
           end
         end
 
+        lexer_contexts = grammar.lexer_contexts
+        beg_mask = lexer_contexts["BEG"].bitmask
+
         operator_target_states.each do |target|
           ctx = target.lexer_context || 0
-          expect(ctx & Lrama::LexerContextClassifier::BEG).not_to eq(0),
-            "State #{target.id} after operator should have BEG context, got #{Lrama::LexerContextClassifier.context_name(ctx)}"
+          ctx_name = described_class.context_name(ctx, lexer_contexts)
+          expect(ctx & beg_mask).not_to eq(0),
+            "State #{target.id} after operator should have BEG context, got #{ctx_name}"
         end
       end
     end
@@ -495,6 +360,10 @@ RSpec.describe Lrama::LexerContextClassifier do
           %token-pattern keyword_end /end/
           %token-pattern tIDENTIFIER /[a-z]+/
           %token-pattern tINTEGER /[0-9]+/
+
+          %lexer-context ENDFN keyword_def
+          %lexer-context END keyword_end tINTEGER
+          %lexer-context CMDARG tIDENTIFIER
 
           %%
 
@@ -513,6 +382,9 @@ RSpec.describe Lrama::LexerContextClassifier do
         states.compute
         states.compute_pslr
 
+        lexer_contexts = grammar.lexer_contexts
+        endfn_mask = lexer_contexts["ENDFN"].bitmask
+
         # Find state reached after keyword_def
         def_target = nil
         states.states.each do |state|
@@ -525,8 +397,9 @@ RSpec.describe Lrama::LexerContextClassifier do
 
         expect(def_target).not_to be_nil
         ctx = def_target.lexer_context || 0
-        expect(ctx & Lrama::LexerContextClassifier::ENDFN).not_to eq(0),
-          "State after keyword_def should have ENDFN context, got #{Lrama::LexerContextClassifier.context_name(ctx)}"
+        ctx_name = described_class.context_name(ctx, lexer_contexts)
+        expect(ctx & endfn_mask).not_to eq(0),
+          "State after keyword_def should have ENDFN context, got #{ctx_name}"
       end
     end
   end
@@ -562,15 +435,9 @@ RSpec.describe Lrama::LexerContextClassifier do
         GRAMMAR
       end
 
-      it "classifies states without breaking PSLR" do
+      it "does not break PSLR" do
         _, pslr_states = compute_ielr_and_pslr(grammar)
-
         expect(pslr_states.pslr_inadequacies).to be_empty
-
-        # All states should have lexer context
-        pslr_states.states.each do |state|
-          expect(state.lexer_context).not_to be_nil
-        end
       end
     end
 
@@ -579,15 +446,11 @@ RSpec.describe Lrama::LexerContextClassifier do
         build_grammar(keyword_context_source(depth: 2), "states/pslr_keyword_ctx.y")
       end
 
-      it "classifies states without breaking PSLR split" do
+      it "does not break PSLR split" do
         ielr_states, pslr_states = compute_ielr_and_pslr(grammar)
 
         expect(pslr_states.states_count).to be > ielr_states.states_count
         expect(pslr_states.pslr_inadequacies).to be_empty
-
-        pslr_states.states.each do |state|
-          expect(state.lexer_context).not_to be_nil
-        end
       end
     end
   end

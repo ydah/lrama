@@ -22,6 +22,7 @@ require_relative "grammar/type"
 require_relative "grammar/union"
 require_relative "grammar/token_pattern"
 require_relative "grammar/lex_prec"
+require_relative "grammar/lexer_context"
 require_relative "lexer"
 
 module Lrama
@@ -111,6 +112,7 @@ module Lrama
     attr_accessor :required #: bool
     attr_reader :token_patterns #: Array[Grammar::TokenPattern]
     attr_reader :lex_prec #: Grammar::LexPrec
+    attr_reader :lexer_contexts #: Hash[String, Grammar::LexerContext]
 
     def_delegators "@symbols_resolver", :symbols, :nterms, :terms, :add_nterm, :add_term, :find_term_by_s_value,
                                         :find_symbol_by_number!, :find_symbol_by_id!, :token_to_symbol,
@@ -146,6 +148,8 @@ module Lrama
       @start_nterm = nil
       @token_patterns = []
       @lex_prec = Grammar::LexPrec.new
+      @lexer_contexts = {}
+      @lexer_context_counter = 0
       @token_pattern_counter = 0
 
       append_special_symbols
@@ -368,6 +372,18 @@ module Lrama
         right_token: right_token,
         lineno: lineno
       )
+    end
+
+    # Add a lexer context from %lexer-context directive
+    # @rbs (name: String, symbols: Array[Lexer::Token::Ident]) -> Grammar::LexerContext
+    def add_lexer_context(name:, symbols:)
+      unless ctx = @lexer_contexts[name]
+        ctx = Grammar::LexerContext.new(name: name, index: @lexer_context_counter)
+        @lexer_context_counter += 1
+        @lexer_contexts[name] = ctx
+      end
+      ctx.add_symbols(symbols)
+      ctx
     end
 
     # Find a token pattern by its name

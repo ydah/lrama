@@ -58,6 +58,7 @@ module Lrama
     attr_accessor :always_follows #: Hash[Action::Goto, Array[Grammar::Symbol]]
     attr_accessor :goto_follows #: Hash[Action::Goto, Array[Grammar::Symbol]]
     attr_accessor :pslr_item_lookahead_set #: lookahead_set?
+    attr_accessor :lexer_context #: Integer?
 
     # @rbs (Integer id, Grammar::Symbol accessing_symbol, Array[Item] kernels) -> void
     def initialize(id, accessing_symbol, kernels)
@@ -82,6 +83,7 @@ module Lrama
       @always_follows = {}
       @goto_follows = {}
       @pslr_item_lookahead_set = nil
+      @lexer_context = nil
       @lhs_contributions = {}
       @lane_items = {}
     end

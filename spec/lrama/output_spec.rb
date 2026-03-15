@@ -226,7 +226,8 @@ RSpec.describe Lrama::Output do
         length_precedences: nil,
         token_patterns: [token_pattern],
         states: [],
-        find_symbol_by_s_value!: instance_double(Lrama::Grammar::Symbol, token_id: 301)
+        find_symbol_by_s_value!: instance_double(Lrama::Grammar::Symbol, token_id: 301),
+        lexer_context_enabled?: false
       )
     end
 
@@ -323,6 +324,35 @@ RSpec.describe Lrama::Output do
         result = pslr_output.state_to_accepting_table
         expect(result).to include("yy_state_to_accepting")
         expect(result).to include("YY_ACCEPTING_NONE")
+      end
+    end
+
+    describe "#lexer_context_table_code" do
+      context "when lexer context is not enabled" do
+        it "returns empty string" do
+          result = pslr_output.lexer_context_table_code
+          expect(result).to eq("")
+        end
+      end
+
+      context "when lexer context is enabled" do
+        before do
+          allow(mock_states).to receive(:lexer_context_enabled?).and_return(true)
+          allow(mock_states).to receive(:lexer_context_table).and_return([0x01, 0x08, 0x02, 0x10])
+        end
+
+        it "generates the C context table" do
+          result = pslr_output.lexer_context_table_code
+          expect(result).to include("YY_CTX_BEG")
+          expect(result).to include("YY_CTX_CMDARG")
+          expect(result).to include("YY_CTX_END")
+          expect(result).to include("YY_CTX_ENDFN")
+          expect(result).to include("YY_CTX_DOT")
+          expect(result).to include("yy_lexer_context")
+          expect(result).to include("yy_lexer_context_is")
+          expect(result).to include("/* state 0 */")
+          expect(result).to include("/* state 3 */")
+        end
       end
     end
 

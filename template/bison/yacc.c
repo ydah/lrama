@@ -590,6 +590,10 @@ static const <%= output.int_type_for(output.context.yyr2) %> yyr2[] =
 <%= output.pslr_tables_and_functions %>
 <%- end -%>
 
+<%- if output.lexer_context_enabled? -%>
+<%= output.lexer_context_table_code %>
+<%- end -%>
+
 <%- if output.pslr_enabled? -%>
 #ifndef YYSETSTATE_CONTEXT
 # define YYSETSTATE_CONTEXT(CurrentState) ((void) 0)

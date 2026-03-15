@@ -3,6 +3,7 @@
 
 require "forwardable"
 require "set"
+require_relative "lexer_context_classifier"
 require_relative "tracer/duration"
 require_relative "state/item"
 
@@ -49,6 +50,7 @@ module Lrama
     attr_reader :scanner_accepts_table #: State::ScannerAccepts?
     attr_reader :pslr_inadequacies #: Array[State::PslrInadequacy]
     attr_reader :pslr_metrics #: Hash[Symbol, Integer | Float | nil]
+    attr_reader :lexer_context_classifier #: LexerContextClassifier?
 
     # @rbs (Grammar grammar, Tracer tracer) -> void
     def initialize(grammar, tracer)
@@ -187,6 +189,8 @@ module Lrama
       report_duration(:compute_default_reduction) { compute_default_reduction }
       report_duration(:build_scanner_accepts) { build_scanner_accepts }
       report_duration(:handle_pslr_inadequacies) { handle_pslr_inadequacies }
+      # Phase 6: Lexer context classification
+      report_duration(:classify_lexer_contexts) { classify_lexer_contexts }
       finalize_pslr_metrics
     end
 
@@ -240,6 +244,45 @@ module Lrama
       validate_conflicts_within_threshold!(logger)
       validate_pslr_state_growth!(logger)
       validate_pslr_inadequacies!(logger)
+    end
+
+    # Classify each state's lexer context based on kernel items.
+    #
+    # For each state, analyzes the kernel items to determine what lexer
+    # context (BEG, CMDARG, ARG, END, ENDFN, MID, DOT) the state belongs to.
+    # When a state has kernel items from multiple contexts, the context is
+    # set to the bitwise OR of all contexts (mixed context).
+    #
+    # @rbs () -> void
+    def classify_lexer_contexts
+      @lexer_context_classifier = LexerContextClassifier.new
+
+      @states.each do |state|
+        groups = @lexer_context_classifier.classify(state)
+
+        # Combine all contexts into a single bitmask
+        combined = 0
+        groups.each_key do |ctx|
+          combined |= ctx if ctx > 0
+        end
+
+        state.lexer_context = combined
+      end
+    end
+
+    # Return the lexer context table as an array of context values,
+    # one per parser state (indexed by state id).
+    #
+    # @rbs () -> Array[Integer]
+    def lexer_context_table
+      @states.map { |state| state.lexer_context || 0 }
+    end
+
+    # Check if lexer context classification has been performed.
+    #
+    # @rbs () -> bool
+    def lexer_context_enabled?
+      pslr_defined? && @lexer_context_classifier != nil
     end
 
     def compute_la_sources_for_conflicted_states

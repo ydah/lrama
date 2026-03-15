@@ -68,6 +68,10 @@
 #define YYPULL 1
 
 
+<%- if output.lexer_context_enabled? -%>
+<%= output.lexer_context_defines_code %>
+<%- end -%>
+
 <%# b4_user_pre_prologue -%>
 <%- if output.aux.prologue -%>
 /* First part of user prologue.  */

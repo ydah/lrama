@@ -354,12 +354,16 @@ RSpec.describe Lrama::Output do
 
         it "generates the C context table" do
           result = pslr_output.lexer_context_table_code
-          expect(result).to include("YY_CTX_BEG")
-          expect(result).to include("YY_CTX_END")
           expect(result).to include("yy_lexer_context")
           expect(result).to include("yy_lexer_context_is")
           expect(result).to include("/* state 0 */")
           expect(result).to include("/* state 3 */")
+        end
+
+        it "generates defines via lexer_context_defines_code" do
+          result = pslr_output.lexer_context_defines_code
+          expect(result).to include("YY_CTX_BEG")
+          expect(result).to include("YY_CTX_END")
         end
       end
     end

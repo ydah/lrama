@@ -17,9 +17,10 @@ module Lrama
   #   %lexer-context CMDARG tIDENTIFIER tFID tCONSTANT
   #
   class LexerContextClassifier
-    # @rbs (Hash[String, Grammar::LexerContext] lexer_contexts) -> void
-    def initialize(lexer_contexts)
+    # @rbs (Hash[String, Grammar::LexerContext] lexer_contexts, ?Hash[String, Array[String]] expansion_args) -> void
+    def initialize(lexer_contexts, expansion_args = {})
       @lexer_contexts = lexer_contexts
+      @expansion_args = expansion_args
       @symbol_to_context = build_symbol_to_context_map
       @context_names = build_context_names
     end
@@ -58,7 +59,19 @@ module Lrama
       # Also try without surrounding quotes for single-char tokens
       bare = name.gsub(/\A["']|["']\z/, "")
 
-      @symbol_to_context[name] || @symbol_to_context[bare] || 0
+      # Direct match
+      ctx = @symbol_to_context[name] || @symbol_to_context[bare]
+      return ctx if ctx
+
+      # Fallback: inherit context from parameterized rule expansion arguments
+      if (arg_names = @expansion_args[name])
+        arg_names.each do |arg_name|
+          ctx = @symbol_to_context[arg_name]
+          return ctx if ctx
+        end
+      end
+
+      0
     end
 
     # For backward compatibility with states.rb split logic

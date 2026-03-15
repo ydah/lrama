@@ -745,6 +745,7 @@ module Lrama
       lines << "/* Lexer Context Classification Table */"
       lines << "/* Maps parser state -> lexer context flags */"
       lines << ""
+      lines << "#ifndef YY_CTX_BEG"
       lines << "#define YY_CTX_BEG    0x01"
       lines << "#define YY_CTX_CMDARG 0x02"
       lines << "#define YY_CTX_ARG    0x04"
@@ -752,6 +753,7 @@ module Lrama
       lines << "#define YY_CTX_ENDFN  0x10"
       lines << "#define YY_CTX_MID    0x20"
       lines << "#define YY_CTX_DOT    0x40"
+      lines << "#endif"
       lines << ""
       lines << "static const unsigned char yy_lexer_context[] = {"
 
@@ -763,7 +765,7 @@ module Lrama
 
       lines << "};"
       lines << ""
-      lines << "static inline int"
+      lines << "int"
       lines << "yy_lexer_context_is(int yystate, int ctx_mask) {"
       lines << "    if (yystate < 0 || yystate >= #{table.size}) return 0;"
       lines << "    return yy_lexer_context[yystate] & ctx_mask;"
@@ -788,10 +790,6 @@ module Lrama
         length_precedences_table_code,
         pseudo_scan_function,
       ]
-
-      # Add lexer context table if available
-      ctx_code = lexer_context_table_code
-      parts << ctx_code unless ctx_code.empty?
 
       parts.join("\n")
     end

@@ -385,6 +385,152 @@ RSpec.describe Lrama::LexerContextClassifier do
     end
   end
 
+  describe "context-based state splitting" do
+    context "with BEG vs CMDARG mixed context" do
+      # This grammar creates a shared nonterminal reached from both
+      # an operator context (BEG) and an identifier context (CMDARG).
+      # The LALR automaton merges these into one state.
+      # Context splitting should separate them.
+      let(:grammar) do
+        build_grammar(<<~GRAMMAR, "lexer_context/beg_vs_cmdarg.y")
+          %define lr.type pslr
+          %token-pattern tPLUS /\\+/
+          %token-pattern tIDENTIFIER /[a-z]+/
+          %token-pattern tINTEGER /[0-9]+/
+          %token-pattern keyword_if /if/
+          %lex-prec keyword_if - tIDENTIFIER
+
+          %%
+
+          program
+            : expr
+            ;
+
+          expr
+            : tINTEGER
+            | tIDENTIFIER
+            | expr tPLUS expr
+            | expr keyword_if expr
+            ;
+        GRAMMAR
+      end
+
+      it "splits mixed-context states" do
+        states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
+        states.compute
+        states.compute_pslr
+
+        # After splitting, states that were reached from both
+        # operator (BEG) and identifier (CMDARG) contexts should
+        # have been separated into distinct states
+        contexts_seen = states.states.map(&:lexer_context).uniq.reject { |c| c == 0 }
+        expect(contexts_seen).not_to be_empty
+      end
+    end
+
+    context "with operator vs identifier predecessor contexts" do
+      let(:grammar) do
+        build_grammar(<<~GRAMMAR, "lexer_context/split_expr.y")
+          %define lr.type pslr
+          %token-pattern tPLUS /\\+/
+          %token-pattern tSTAR /\\*/
+          %token-pattern tIDENTIFIER /[a-z]+/
+          %token-pattern tINTEGER /[0-9]+/
+
+          %%
+
+          program
+            : expr
+            ;
+
+          expr
+            : tINTEGER
+            | tIDENTIFIER
+            | expr tPLUS expr
+            | expr tSTAR expr
+            ;
+        GRAMMAR
+      end
+
+      it "classifies all states with non-nil context" do
+        states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
+        states.compute
+        states.compute_pslr
+
+        states.states.each do |state|
+          expect(state.lexer_context).not_to be_nil,
+            "State #{state.id} has nil lexer_context"
+        end
+      end
+
+      it "has BEG context after operators" do
+        states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
+        states.compute
+        states.compute_pslr
+
+        # Find states after tPLUS or tSTAR
+        operator_target_states = []
+        states.states.each do |state|
+          state.term_transitions.each do |shift|
+            name = shift.next_sym.id.s_value
+            if name == "tPLUS" || name == "tSTAR"
+              operator_target_states << shift.to_state
+            end
+          end
+        end
+
+        operator_target_states.each do |target|
+          ctx = target.lexer_context || 0
+          expect(ctx & Lrama::LexerContextClassifier::BEG).not_to eq(0),
+            "State #{target.id} after operator should have BEG context, got #{Lrama::LexerContextClassifier.context_name(ctx)}"
+        end
+      end
+    end
+
+    context "with def keyword creating ENDFN context" do
+      let(:grammar) do
+        build_grammar(<<~GRAMMAR, "lexer_context/endfn.y")
+          %define lr.type pslr
+          %token-pattern keyword_def /def/
+          %token-pattern keyword_end /end/
+          %token-pattern tIDENTIFIER /[a-z]+/
+          %token-pattern tINTEGER /[0-9]+/
+
+          %%
+
+          program
+            : defn
+            ;
+
+          defn
+            : keyword_def tIDENTIFIER keyword_end
+            ;
+        GRAMMAR
+      end
+
+      it "marks state after keyword_def as ENDFN" do
+        states = Lrama::States.new(grammar, Lrama::Tracer.new(Lrama::Logger.new))
+        states.compute
+        states.compute_pslr
+
+        # Find state reached after keyword_def
+        def_target = nil
+        states.states.each do |state|
+          state.term_transitions.each do |shift|
+            if shift.next_sym.id.s_value == "keyword_def"
+              def_target = shift.to_state
+            end
+          end
+        end
+
+        expect(def_target).not_to be_nil
+        ctx = def_target.lexer_context || 0
+        expect(ctx & Lrama::LexerContextClassifier::ENDFN).not_to eq(0),
+          "State after keyword_def should have ENDFN context, got #{Lrama::LexerContextClassifier.context_name(ctx)}"
+      end
+    end
+  end
+
   describe "existing PSLR tests still pass" do
     context "pure reduce profile" do
       let(:grammar) do

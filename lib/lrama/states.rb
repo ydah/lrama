@@ -177,10 +177,13 @@ module Lrama
       report_duration(:build_scanner_fsa) { build_scanner_fsa }
       report_duration(:build_length_precedences) { build_length_precedences }
       report_duration(:compute_inadequacy_annotations) { compute_inadequacy_annotations }
-      # Phase 3
+      # Phase 3a: PSLR split (Scanner FSA-based)
       @pslr_split_enabled = true
       report_duration(:split_states) { split_states }
       @pslr_split_enabled = false
+      # Phase 3b: Lexer context classification + context-based split
+      report_duration(:classify_lexer_contexts) { classify_lexer_contexts }
+      report_duration(:split_states_by_context) { split_states_by_context }
       # Phase 4
       report_duration(:clear_look_ahead_sets) { clear_look_ahead_sets }
       report_duration(:compute_look_ahead_sets) { compute_look_ahead_sets }
@@ -189,7 +192,7 @@ module Lrama
       report_duration(:compute_default_reduction) { compute_default_reduction }
       report_duration(:build_scanner_accepts) { build_scanner_accepts }
       report_duration(:handle_pslr_inadequacies) { handle_pslr_inadequacies }
-      # Phase 6: Lexer context classification
+      # Phase 6: Re-classify after all splits
       report_duration(:classify_lexer_contexts) { classify_lexer_contexts }
       finalize_pslr_metrics
     end
@@ -853,6 +856,119 @@ module Lrama
           compute_state(state, transition, transition.to_state)
         end
       end
+    end
+
+    # Split states where different predecessor paths lead to different
+    # lexer contexts. This resolves LALR state merging that makes
+    # BEG vs CMDARG (and other context pairs) indistinguishable.
+    #
+    # Algorithm:
+    # 1. For each state, group incoming transitions by the lexer context
+    #    that the predecessor would imply
+    # 2. If a state has predecessors from multiple different contexts,
+    #    split the state so each split has a unique context
+    #
+    # @rbs () -> void
+    def split_states_by_context
+      return unless @lexer_context_classifier
+
+      # Iterate over a snapshot of states (new states may be added)
+      states_snapshot = @states.dup
+
+      states_snapshot.each do |state|
+        # Skip start state and states with no context
+        next if state.kernels.any?(&:start_item?)
+
+        # Group predecessor transitions by the context they imply
+        context_groups = compute_predecessor_context_groups(state)
+
+        # Only split if there are multiple distinct non-zero contexts
+        meaningful_groups = context_groups.reject { |ctx, _| ctx == 0 }
+        next if meaningful_groups.size <= 1
+
+        # The largest group keeps the original state
+        primary_ctx, = meaningful_groups.max_by { |_, transitions| transitions.size }
+
+        meaningful_groups.each do |ctx, transitions|
+          next if ctx == primary_ctx
+
+          # Create a new split state for this context group
+          split = create_context_split_state(state)
+          split.lexer_context = ctx
+
+          # Update predecessor transitions to point to the new split state
+          transitions.each do |pred_state, transition|
+            pred_state.update_transition(transition, split)
+          end
+        end
+
+        # Update the original state's context to the primary
+        state.lexer_context = primary_ctx
+      end
+    end
+
+    # For a given state, group its incoming transitions by the lexer context
+    # that the predecessor state implies for this state.
+    #
+    # The implied context is determined by what symbol was used to reach
+    # this state (the accessing symbol's context).
+    #
+    # @rbs (State state) -> Hash[Integer, Array[[State, State::Action::Shift | State::Action::Goto]]]
+    def compute_predecessor_context_groups(state)
+      groups = Hash.new { |h, k| h[k] = [] }
+
+      state.predecessors.each do |pred|
+        pred.transitions.each do |transition|
+          next unless transition.to_state == state
+
+          # The context is determined by the predecessor's context
+          # combined with what we're transitioning on
+          ctx = infer_transition_context(pred, transition)
+          groups[ctx] << [pred, transition]
+        end
+      end
+
+      groups
+    end
+
+    # Infer the lexer context that a transition implies for the target state.
+    #
+    # @rbs (State pred, State::Action::Shift | State::Action::Goto transition) -> Integer
+    def infer_transition_context(pred, transition)
+      sym = transition.next_sym
+      if sym.term?
+        @lexer_context_classifier.classify_terminal_context(sym)
+      else
+        @lexer_context_classifier.classify_nonterminal_context(sym)
+      end
+    end
+
+    # Create a new split state that is an isocore copy of the given state.
+    #
+    # @rbs (State original) -> State
+    def create_context_split_state(original)
+      base = original.lalr_isocore || original
+      new_state = State.new(@states.count, base.accessing_symbol, base.kernels)
+      new_state.closure = base.closure
+      new_state.compute_transitions_and_reduces
+
+      # Copy transition targets from original
+      original.transitions.each do |transition|
+        new_state.set_items_to_state(transition.to_items, transition.to_state)
+      end
+
+      @states << new_state
+      new_state.lalr_isocore = base
+      base.ielr_isocores << new_state
+      base.ielr_isocores.each do |st|
+        st.ielr_isocores = base.ielr_isocores
+      end
+
+      new_state.lookaheads_recomputed = true
+      new_state.item_lookahead_set = original.item_lookahead_set
+      new_state.pslr_item_lookahead_set = original.pslr_item_lookahead_set
+
+      new_state
     end
 
     # @rbs () -> void

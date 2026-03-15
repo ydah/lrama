@@ -735,26 +735,30 @@ module Lrama
       @context.states.lexer_context_enabled?
     end
 
+    # Generate #define constants for lexer contexts, emitted early in the output
+    # so that user code in %{ ... %} can reference them.
+    def lexer_context_defines_code
+      return "" unless lexer_context_enabled?
+
+      classifier = @context.states.lexer_context_classifier
+      lines = []
+      lines << "/* Lexer context constants — generated from %lexer-context directives */"
+      classifier.contexts.each do |lc|
+        lines << "#define YY_CTX_%-8s 0x%02x" % [lc.name, lc.bitmask]
+      end
+      lines.join("\n")
+    end
+
     # Generate the lexer context table as C code.
     def lexer_context_table_code
       return "" unless lexer_context_enabled?
 
       table = @context.states.lexer_context_table
-      classifier = @context.states.lexer_context_classifier
       lexer_contexts = @grammar.lexer_contexts
       lines = []
 
       lines << "/* Lexer Context Classification Table */"
       lines << "/* Maps parser state -> lexer context flags */"
-      lines << ""
-
-      # Generate #define for each context from grammar definitions
-      first_ctx = classifier.contexts.first
-      lines << "#ifndef YY_CTX_#{first_ctx.name}" if first_ctx
-      classifier.contexts.each do |lc|
-        lines << "#define YY_CTX_%-8s 0x%02x" % [lc.name, lc.bitmask]
-      end
-      lines << "#endif" if first_ctx
       lines << ""
       lines << "static const unsigned char yy_lexer_context[] = {"
 

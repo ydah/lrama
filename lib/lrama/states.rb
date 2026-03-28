@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "forwardable"
+require "set"
 require_relative "tracer/duration"
 require_relative "state/item"
 
@@ -349,15 +350,7 @@ module Lrama
 
     # @rbs () -> Array[State::Action::Goto]
     def nterm_transitions
-      a = []
-
-      @states.each do |state|
-        state.nterm_transitions.each do |goto|
-          a << goto
-        end
-      end
-
-      a
+      @nterm_transitions ||= @states.flat_map(&:nterm_transitions)
     end
 
     # @rbs () -> void
@@ -754,6 +747,7 @@ module Lrama
 
     # @rbs () -> void
     def split_states
+      @nterm_transitions = nil
       @states.each do |state|
         state.transitions.each do |transition|
           compute_state(state, transition, transition.to_state)
@@ -768,12 +762,17 @@ module Lrama
       end
 
       queue = @states.reject {|state| state.annotation_list.empty? }
+      in_queue = Set.new(queue)
 
       while (curr = queue.shift) do
+        in_queue.delete(curr)
         curr.predecessors.each do |pred|
-          cache = pred.annotation_list.dup
+          old_size = pred.annotation_list.size
           curr.annotate_predecessor(pred)
-          queue << pred if cache != pred.annotation_list && !queue.include?(pred)
+          if pred.annotation_list.size != old_size && !in_queue.include?(pred)
+            queue << pred
+            in_queue.add(pred)
+          end
         end
       end
     end
@@ -850,6 +849,7 @@ module Lrama
 
     # @rbs () -> void
     def clear_look_ahead_sets
+      @nterm_transitions = nil
       @direct_read_sets.clear
       @reads_relation.clear
       @read_sets.clear

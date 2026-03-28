@@ -91,6 +91,7 @@ module Lrama
     def closure=(closure)
       @closure = closure
       @items = @kernels + @closure
+      @items_index = nil
     end
 
     # @rbs () -> Array[Action::Reduce]
@@ -161,6 +162,12 @@ module Lrama
       @nterm_transitions ||= transitions.select {|transition| transition.is_a?(Action::Goto) }
     end
 
+    # @rbs (Grammar::Symbol sym) -> Action::Goto?
+    def nterm_transition_for(sym)
+      @nterm_transition_by_sym ||= nterm_transitions.each_with_object({}) {|goto, h| h[goto.next_sym] = goto }
+      @nterm_transition_by_sym[sym]
+    end
+
     # @rbs () -> Array[Action::Shift]
     def term_transitions # steep:ignore
       @term_transitions ||= transitions.select {|transition| transition.is_a?(Action::Shift) }
@@ -196,6 +203,7 @@ module Lrama
       @transitions.delete(transition)
       @transitions << new_transition
       @nterm_transitions = nil
+      @nterm_transition_by_sym = nil
       @term_transitions = nil
 
       @follow_kernel_items[new_transition] = @follow_kernel_items.delete(transition)
@@ -418,7 +426,7 @@ module Lrama
     def lhs_contributions(sym, token)
       return @lhs_contributions[sym][token] unless @lhs_contributions.dig(sym, token).nil?
 
-      transition = nterm_transitions.find {|goto| goto.next_sym == sym }
+      transition = nterm_transition_for(sym)
       @lhs_contributions[sym] ||= {}
       @lhs_contributions[sym][token] =
         if always_follows[transition].include?(token)
@@ -443,8 +451,8 @@ module Lrama
             prev_items = predecessors_with_item(kernel)
             prev_items.map {|st, i| st.item_lookahead_set[i] }.reduce([]) {|acc, syms| acc |= syms }
           elsif kernel.position == 1
-            prev_state = @predecessors.find {|p| p.transitions.any? {|transition| transition.next_sym == kernel.lhs } }
-            goto = prev_state.nterm_transitions.find {|goto| goto.next_sym == kernel.lhs }
+            prev_state = @predecessors.find {|p| p.nterm_transition_for(kernel.lhs) }
+            goto = prev_state.nterm_transition_for(kernel.lhs)
             prev_state.goto_follows[goto]
           end
         [kernel, value]
@@ -458,13 +466,15 @@ module Lrama
 
     # @rbs (Item item) -> Array[[State, Item]]
     def predecessors_with_item(item)
-      result = []
-      @predecessors.each do |pre|
-        pre.items.each do |i|
-          result << [pre, i] if i.predecessor_item_of?(item)
-        end
+      @predecessors.filter_map do |pre|
+        pred_item = pre.items_index[[item.rule, item.position - 1]]
+        [pre, pred_item] if pred_item
       end
-      result
+    end
+
+    # @rbs () -> Hash[[Grammar::Rule, Integer], Item]
+    def items_index
+      @items_index ||= items.each_with_object({}) {|i, h| h[[i.rule, i.position]] = i }
     end
 
     # @rbs (State prev_state) -> void
@@ -478,7 +488,7 @@ module Lrama
     # @rbs (Grammar::Symbol nterm_token) -> Array[Grammar::Symbol]
     def goto_follow_set(nterm_token)
       return [] if nterm_token.accept_symbol?
-      goto = @lalr_isocore.nterm_transitions.find {|g| g.next_sym == nterm_token }
+      goto = @lalr_isocore.nterm_transition_for(nterm_token)
 
       @kernels
         .select {|kernel| @lalr_isocore.follow_kernel_items[goto][kernel] }
@@ -527,7 +537,7 @@ module Lrama
       end
 
       state_items.map {|state, item|
-        state.nterm_transitions.find {|goto2| goto2.next_sym == item.lhs }
+        state.nterm_transition_for(item.lhs)
       }
     end
   end

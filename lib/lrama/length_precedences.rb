@@ -2,52 +2,79 @@
 # frozen_string_literal: true
 
 module Lrama
-  # Length precedences table for PSLR(1)
-  # Based on Definition 3.2.15 from the PSLR dissertation
+  # Runtime length precedence matrix for PSLR pseudo-scanning.
   #
-  # Determines which token should be preferred when there's a length conflict:
-  # - :left  - the shorter token (t1) should be preferred
-  # - :right - the longer token (t2) should be preferred
-  # - :undefined - no preference defined, use default (longest match)
+  # When a longer match for new_token is reached after an earlier match for
+  # old_token, #precedes? answers whether the longer match should replace it.
   class LengthPrecedences
-    # Result of length precedence lookup
-    LEFT = :left       #: Symbol
-    RIGHT = :right     #: Symbol
+    LEFT = :left #: Symbol
+    RIGHT = :right #: Symbol
     UNDEFINED = :undefined #: Symbol
 
-    attr_reader :table #: Hash[[String, String], Symbol]
+    PREFER_NEW = :prefer_new #: Symbol
+    PREFER_OLD = :prefer_old #: Symbol
+    UNRESOLVED = :unresolved #: Symbol
+
+    attr_reader :table #: Hash[[String, String], bool]
+    attr_reader :resolution_table #: Hash[[String, String], Symbol]
 
     # @rbs (Grammar::LexPrec lex_prec) -> void
     def initialize(lex_prec)
-      @table = build_table(lex_prec)
+      @lex_prec = lex_prec
+      @resolution_table = build_resolution_table(lex_prec)
+      @table = @resolution_table.transform_values {|value| value == PREFER_NEW }
     end
 
-    # Get the length precedence between two tokens
-    # @rbs (String t1, String t2) -> Symbol
-    def precedence(t1, t2)
-      @table[[t1, t2]] || UNDEFINED
+    # @rbs (String old_token, String new_token) -> bool
+    def precedes?(old_token, new_token)
+      resolution(old_token, new_token) == PREFER_NEW
     end
 
-    # Check if t1 (shorter) should be preferred over t2 (longer)
-    # @rbs (String t1, String t2) -> bool
-    def prefer_shorter?(t1, t2)
-      precedence(t1, t2) == LEFT
+    # Backward-compatible query used by existing specs.
+    # @rbs (String old_token, String new_token) -> bool
+    def prefer_shorter?(old_token, new_token)
+      resolution(old_token, new_token) == PREFER_OLD
+    end
+
+    # @rbs (String old_token, String new_token) -> Symbol
+    def resolution(old_token, new_token)
+      @resolution_table.fetch([old_token, new_token]) do
+        old_token == new_token ? PREFER_NEW : UNRESOLVED
+      end
+    end
+
+    # @rbs (String old_token, String new_token) -> Symbol
+    def precedence(old_token, new_token)
+      case resolution(old_token, new_token)
+      when PREFER_NEW
+        RIGHT
+      when PREFER_OLD
+        LEFT
+      else
+        UNDEFINED
+      end
     end
 
     private
 
-    # Build the length precedence table from lex-prec rules
     # @rbs (Grammar::LexPrec lex_prec) -> Hash[[String, String], Symbol]
-    def build_table(lex_prec)
+    def build_resolution_table(lex_prec)
       table = {}
 
       lex_prec.rules.each do |rule|
+        left = rule.left_name
+        right = rule.right_name
+
         case rule.operator
-        when Grammar::LexPrec::SHORTER
-          # t1 -s t2: t1 (shorter) should be preferred over t2 (longer)
-          table[[rule.left_name, rule.right_name]] = LEFT
-          # Inverse: t2 (longer) should not be preferred over t1 (shorter)
-          table[[rule.right_name, rule.left_name]] = RIGHT
+        when Grammar::LexPrec::IDENTITY_RIGHT_LONGEST, Grammar::LexPrec::LONGEST
+          table[[left, right]] = PREFER_NEW
+          table[[right, left]] = PREFER_NEW
+        when Grammar::LexPrec::IDENTITY_RIGHT_SHORTEST, Grammar::LexPrec::SHORTEST
+          table[[left, right]] = PREFER_OLD
+          table[[right, left]] = PREFER_OLD
+        when Grammar::LexPrec::TOKEN_RIGHT, Grammar::LexPrec::TOKEN_RIGHT_LENGTH
+          table[[left, right]] = PREFER_NEW
+          table[[right, left]] = PREFER_OLD
         end
       end
 

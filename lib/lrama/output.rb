@@ -560,7 +560,6 @@ module Lrama
       lines = []
       lines << ""
       lines << "/* Accepting state token IDs */"
-      lines << "/* For each accepting state, list of (token_id, definition_order) pairs */"
       lines << ""
 
       # Collect all unique tokens
@@ -601,13 +600,14 @@ module Lrama
 
       if num_accepting_states > 0
         lines << "static const int yy_scanner_accepts[YY_NUM_PARSER_STATES][YY_NUM_ACCEPTING_STATES] = {"
+        token_pattern_indexes = @context.states.token_patterns.each_with_index.to_h
 
         @context.states.states.each_with_index do |parser_state, ps_idx|
           row = []
           pslr_accepting_states.each do |fsa_state|
             token = scanner_accepts[parser_state.id, fsa_state.id]
             if token
-              row << token.definition_order
+              row << token_pattern_indexes.fetch(token)
             else
               row << -1
             end
@@ -630,23 +630,17 @@ module Lrama
 
       lines = []
       lines << ""
-      lines << "/* length_precedences[token1][token2] -> precedence */"
-      lines << "#define YY_LENGTH_PREC_UNDEFINED 0"
-      lines << "#define YY_LENGTH_PREC_LEFT 1      /* shorter token wins */"
-      lines << "#define YY_LENGTH_PREC_RIGHT 2     /* longer token wins */"
+      lines << "/* yy_pslr_length_precedes[old_token][new_token] is true when a longer"
+      lines << "   match for new_token replaces an earlier match for old_token. */"
       lines << ""
 
       num_tokens = pslr_token_pattern_count
       if num_tokens > 0
-        lines << "static const int yy_length_precedences[#{num_tokens}][#{num_tokens}] = {"
+        lines << "static const int yy_pslr_length_precedes[#{num_tokens}][#{num_tokens}] = {"
 
         @context.states.token_patterns.each_with_index do |t1, i|
           row = @context.states.token_patterns.map do |t2|
-            case length_precedences.precedence(t1.name, t2.name)
-            when :left then 1
-            when :right then 2
-            else 0
-            end
+            length_precedences.precedes?(t1.name, t2.name) ? 1 : 0
           end
           lines << "  /* #{t1.name} */ {#{row.join(', ')}}#{i < num_tokens - 1 ? ',' : ''}"
         end
@@ -709,10 +703,8 @@ module Lrama
             if (sa != YY_ACCEPTING_NONE) {
               int pattern_index = yy_scanner_accepts[parser_state][sa];
               if (pattern_index != YY_PSLR_EMPTY_PATTERN) {
-                /* Check length precedences */
                 if (pbest == YY_PSLR_EMPTY_PATTERN ||
-                    (i > ibest && yy_length_precedences[pbest][pattern_index] != YY_LENGTH_PREC_LEFT) ||
-                    (i == ibest && yy_length_precedences[pattern_index][pbest] == YY_LENGTH_PREC_LEFT)) {
+                    yy_pslr_length_precedes[pbest][pattern_index]) {
                   pbest = pattern_index;
                   ibest = i;
                 }

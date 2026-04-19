@@ -33,7 +33,7 @@ static int yyerror(YYLTYPE *loc, struct parse_params *p, const char *str);
 %token-pattern RSHIFT />>/
 %token-pattern RANGLE />/
 
-%lex-prec IF - ID
+%lex-prec ID <~ IF
 %lex-prec RANGLE -s RSHIFT
 
 %%

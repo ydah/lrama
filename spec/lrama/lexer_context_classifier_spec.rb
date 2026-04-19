@@ -142,7 +142,7 @@ RSpec.describe Lrama::LexerContextClassifier do
           %define lr.type pslr
           %token-pattern IF /if/
           %token-pattern ID /[a-z]+/
-          %lex-prec IF - ID
+          %lex-prec ID <~ IF
 
           %lexer-context BEG IF
           %lexer-context CMDARG ID

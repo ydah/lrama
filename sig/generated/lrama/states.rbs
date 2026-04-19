@@ -54,6 +54,8 @@ module Lrama
 
     attr_reader pslr_metrics: Hash[Symbol, Integer | Float | nil]
 
+    attr_reader lexer_context_classifier: LexerContextClassifier?
+
     # @rbs (Grammar grammar, Tracer tracer) -> void
     def initialize: (Grammar grammar, Tracer tracer) -> void
 
@@ -91,6 +93,27 @@ module Lrama
 
     # @rbs (Logger logger) -> void
     def validate!: (Logger logger) -> void
+
+    # Classify each state's lexer context based on kernel items.
+    #
+    # For each state, analyzes the kernel items to determine what lexer
+    # context (BEG, CMDARG, ARG, END, ENDFN, MID, DOT) the state belongs to.
+    # When a state has kernel items from multiple contexts, the context is
+    # set to the bitwise OR of all contexts (mixed context).
+    #
+    # @rbs () -> void
+    def classify_lexer_contexts: () -> void
+
+    # Return the lexer context table as an array of context values,
+    # one per parser state (indexed by state id).
+    #
+    # @rbs () -> Array[Integer]
+    def lexer_context_table: () -> Array[Integer]
+
+    # Check if lexer context classification has been performed.
+    #
+    # @rbs () -> bool
+    def lexer_context_enabled?: () -> bool
 
     def compute_la_sources_for_conflicted_states: () -> untyped
 
@@ -203,6 +226,38 @@ module Lrama
     # @rbs () -> void
     def split_states: () -> void
 
+    # Split states where different predecessor paths lead to different
+    # lexer contexts. This resolves LALR state merging that makes
+    # BEG vs CMDARG (and other context pairs) indistinguishable.
+    #
+    # Algorithm:
+    # 1. For each state, group incoming transitions by the lexer context
+    #    that the predecessor would imply
+    # 2. If a state has predecessors from multiple different contexts,
+    #    split the state so each split has a unique context
+    #
+    # @rbs () -> void
+    def split_states_by_context: () -> void
+
+    # For a given state, group its incoming transitions by the lexer context
+    # that the predecessor state implies for this state.
+    #
+    # The implied context is determined by what symbol was used to reach
+    # this state (the accessing symbol's context).
+    #
+    # @rbs (State state) -> Hash[Integer, Array[[State, State::Action::Shift | State::Action::Goto]]]
+    def compute_predecessor_context_groups: (State state) -> Hash[Integer, Array[[ State, State::Action::Shift | State::Action::Goto ]]]
+
+    # Infer the lexer context that a transition implies for the target state.
+    #
+    # @rbs (State pred, State::Action::Shift | State::Action::Goto transition) -> Integer
+    def infer_transition_context: (State pred, State::Action::Shift | State::Action::Goto transition) -> Integer
+
+    # Create a new split state that is an isocore copy of the given state.
+    #
+    # @rbs (State original) -> State
+    def create_context_split_state: (State original) -> State
+
     # @rbs () -> void
     def capture_pslr_metrics_before_split: () -> void
 
@@ -226,9 +281,6 @@ module Lrama
 
     # @rbs (State state, ?State::lookahead_set filtered_lookaheads) -> Set[String]
     def acceptable_tokens_for_pslr: (State state, ?State::lookahead_set filtered_lookaheads) -> Set[String]
-
-    # @rbs (Array[Grammar::TokenPattern] candidates) -> Grammar::TokenPattern?
-    def select_best_pslr_token: (Array[Grammar::TokenPattern] candidates) -> Grammar::TokenPattern?
 
     # @rbs (Logger logger) -> void
     def validate_conflicts_within_threshold!: (Logger logger) -> void
@@ -271,6 +323,12 @@ module Lrama
 
     # @rbs (Logger logger) -> void
     def validate_pslr_inadequacies!: (Logger logger) -> void
+
+    # @rbs (Logger logger) -> void
+    def validate_pslr_scanner_conflicts!: (Logger logger) -> void
+
+    # @rbs (State::ScannerAccepts::Conflict conflict) -> String
+    def pslr_scanner_conflict_message: (State::ScannerAccepts::Conflict conflict) -> String
 
     # @rbs (Logger logger) -> void
     def validate_pslr_state_growth!: (Logger logger) -> void

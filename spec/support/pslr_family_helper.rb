@@ -62,7 +62,7 @@ module PslrFamilyHelper
       %token-pattern X /x/
       %token-pattern IF /if/
       %token-pattern ID /[a-z]+/
-      %lex-prec IF - ID
+      %lex-prec ID <~ IF
 
       %%
 
@@ -125,7 +125,7 @@ module PslrFamilyHelper
       %token-pattern ID /[a-z]+/
       %token-pattern RSHIFT />>/
       %token-pattern RANGLE />/
-      %lex-prec IF - ID
+      %lex-prec ID <~ IF
       %lex-prec RANGLE -s RSHIFT
 
       %%

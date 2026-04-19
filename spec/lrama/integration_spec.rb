@@ -388,7 +388,7 @@ RSpec.describe "integration" do
         right = Lrama::Lexer::Token::Ident.new(s_value: "RSHIFT")
         lex_prec.add_rule(
           left_token: left,
-          operator: Lrama::Grammar::LexPrec::SHORTER,
+          operator: Lrama::Grammar::LexPrec::SHORTEST,
           right_token: right,
           lineno: 1
         )
@@ -409,22 +409,22 @@ RSpec.describe "integration" do
       let(:lex_prec) { Lrama::Grammar::LexPrec.new }
 
       before do
-        left = Lrama::Lexer::Token::Ident.new(s_value: "IF")
-        right = Lrama::Lexer::Token::Ident.new(s_value: "ID")
+        left = Lrama::Lexer::Token::Ident.new(s_value: "ID")
+        right = Lrama::Lexer::Token::Ident.new(s_value: "IF")
         lex_prec.add_rule(
           left_token: left,
-          operator: Lrama::Grammar::LexPrec::HIGHER,
+          operator: Lrama::Grammar::LexPrec::IDENTITY_RIGHT_LONGEST,
           right_token: right,
           lineno: 1
         )
       end
 
       it "indicates IF has higher priority than ID" do
-        expect(lex_prec.higher_priority?("IF", "ID")).to be true
+        expect(lex_prec.identity_precedes?("IF", "ID")).to be true
       end
 
       it "indicates ID does not have higher priority than IF" do
-        expect(lex_prec.higher_priority?("ID", "IF")).to be false
+        expect(lex_prec.identity_precedes?("ID", "IF")).to be false
       end
     end
 
@@ -545,9 +545,8 @@ RSpec.describe "integration" do
           expect(rendered).to include("YY_ACCEPTING_NONE")
         end
 
-        it "includes yy_length_precedences table" do
-          expect(rendered).to include("yy_length_precedences")
-          expect(rendered).to include("YY_LENGTH_PREC_LEFT")
+        it "includes yy_pslr_length_precedes table" do
+          expect(rendered).to include("yy_pslr_length_precedes")
         end
 
         it "includes yy_pseudo_scan function" do
@@ -557,7 +556,7 @@ RSpec.describe "integration" do
         end
 
         it "pseudo_scan function uses length precedences for token selection" do
-          expect(rendered).to include("yy_length_precedences[pbest][pattern_index]")
+          expect(rendered).to include("yy_pslr_length_precedes[pbest][pattern_index]")
         end
       end
     end

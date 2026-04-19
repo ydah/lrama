@@ -388,8 +388,8 @@ RSpec.describe Lrama::Output do
 
       it "generates length precedences table" do
         result = pslr_output.length_precedences_table_code
-        expect(result).to include("length_precedences")
-        expect(result).to include("YY_LENGTH_PREC_UNDEFINED")
+        expect(result).to include("yy_pslr_length_precedes")
+        expect(result).to include("old_token")
       end
     end
 

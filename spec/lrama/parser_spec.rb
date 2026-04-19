@@ -4669,13 +4669,13 @@ RSpec.describe Lrama::Parser do
         grammar.validate!
 
         expect(grammar.lex_prec.rules.size).to eq(1)
-        expect(grammar.lex_prec.shorter_priority?("RANGLE", "RSHIFT")).to be true
+        expect(grammar.lex_prec.shortest_pair?("RANGLE", "RSHIFT")).to be true
       end
 
-      it "parses higher priority rule" do
+      it "parses identity-right longest rule" do
         y = <<~GRAMMAR
           %token IF ID
-          %lex-prec IF - ID
+          %lex-prec ID <~ IF
           %%
           program: IF | ID
         GRAMMAR
@@ -4685,13 +4685,14 @@ RSpec.describe Lrama::Parser do
         grammar.validate!
 
         expect(grammar.lex_prec.rules.size).to eq(1)
-        expect(grammar.lex_prec.higher_priority?("IF", "ID")).to be true
+        expect(grammar.lex_prec.identity_precedes?("IF", "ID")).to be true
+        expect(grammar.lex_prec.longest_pair?("ID", "IF")).to be true
       end
 
       it "parses chained lex-prec rules" do
         y = <<~GRAMMAR
           %token IF ELSE WHILE ID
-          %lex-prec IF - ELSE - WHILE - ID
+          %lex-prec ID <- WHILE <- ELSE <- IF
           %%
           program: IF | ELSE | WHILE | ID
         GRAMMAR
@@ -4701,9 +4702,30 @@ RSpec.describe Lrama::Parser do
         grammar.validate!
 
         expect(grammar.lex_prec.rules.size).to eq(3)
-        expect(grammar.lex_prec.higher_priority?("IF", "ELSE")).to be true
-        expect(grammar.lex_prec.higher_priority?("ELSE", "WHILE")).to be true
-        expect(grammar.lex_prec.higher_priority?("WHILE", "ID")).to be true
+        expect(grammar.lex_prec.identity_precedes?("WHILE", "ID")).to be true
+        expect(grammar.lex_prec.identity_precedes?("ELSE", "WHILE")).to be true
+        expect(grammar.lex_prec.identity_precedes?("IF", "ELSE")).to be true
+        expect(grammar.lex_prec.identity_precedes?("IF", "ID")).to be false
+      end
+
+      it "parses symbol sets and lexical ties" do
+        y = <<~GRAMMAR
+          %token IF WHILE ID RANGLE RSHIFT
+          %symbol-set keywords IF WHILE
+          %lex-tie ID keywords
+          %lex-no-tie RANGLE RSHIFT
+          %%
+          program: IF | WHILE | ID | RANGLE | RSHIFT
+        GRAMMAR
+
+        grammar = Lrama::Parser.new(y, "pslr_test.y").parse
+        grammar.prepare
+        grammar.validate!
+
+        expect(grammar.symbol_sets.fetch("keywords").map(&:s_value)).to eq(["IF", "WHILE"])
+        expect(grammar.lex_tie.tied?("ID", "IF")).to be true
+        expect(grammar.lex_tie.tied?("ID", "WHILE")).to be true
+        expect(grammar.lex_tie.no_tie?("RANGLE", "RSHIFT")).to be true
       end
     end
 

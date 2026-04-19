@@ -39,7 +39,7 @@ module Lrama
 
     def_delegators "@grammar", :symbols, :terms, :nterms, :rules, :precedences,
       :accept_symbol, :eof_symbol, :undef_symbol, :find_symbol_by_s_value!, :ielr_defined?, :pslr_defined?,
-      :token_patterns, :lex_prec, :pslr_max_states, :pslr_max_state_ratio
+      :token_patterns, :lex_prec, :lex_tie, :pslr_max_states, :pslr_max_state_ratio
 
     attr_reader :states #: Array[State]
     attr_reader :reads_relation #: Hash[State::Action::Goto, Array[State::Action::Goto]]
@@ -246,6 +246,7 @@ module Lrama
     def validate!(logger)
       validate_conflicts_within_threshold!(logger)
       validate_pslr_state_growth!(logger)
+      validate_pslr_scanner_conflicts!(logger)
       validate_pslr_inadequacies!(logger)
     end
 
@@ -1082,15 +1083,30 @@ module Lrama
       return [] unless @scanner_fsa
 
       acc_sp = acceptable_tokens_for_pslr(state, filtered_lookaheads)
+      table, conflicts = State::ScannerAccepts.compute_for_acceptable_tokens(
+        @scanner_fsa,
+        lex_prec,
+        @length_precedences || LengthPrecedences.new(lex_prec),
+        acc_sp
+      )
 
-      @scanner_fsa.states.each_with_object([]) do |fsa_state, signature|
+      signature = @scanner_fsa.states.each_with_object([]) do |fsa_state, result|
         next unless fsa_state.accepting?
 
-        candidates = fsa_state.accepting_tokens.select do |token_pattern|
-          acc_sp.include?(token_pattern.name)
-        end
-        signature << [fsa_state.id, select_best_pslr_token(candidates)&.name]
+        result << [fsa_state.id, table[fsa_state.id]&.name]
       end
+
+      conflicts.each do |conflict|
+        signature << [
+          :unresolved,
+          conflict.scanner_state_id,
+          conflict.shorter_tokens,
+          conflict.selected_shorter_token,
+          conflict.current_tokens
+        ]
+      end
+
+      signature
     end
 
     # @rbs (State state, ?State::lookahead_set filtered_lookaheads) -> Set[String]
@@ -1116,22 +1132,7 @@ module Lrama
         end
       end
 
-      tokens
-    end
-
-    # @rbs (Array[Grammar::TokenPattern] candidates) -> Grammar::TokenPattern?
-    def select_best_pslr_token(candidates)
-      return nil if candidates.empty?
-      return candidates.first if candidates.size == 1
-
-      candidates.min_by do |token|
-        higher_count = candidates.count do |other|
-          next false if other == token
-          lex_prec.higher_priority?(token.name, other.name)
-        end
-
-        [-higher_count, token.definition_order]
-      end
+      @grammar.expand_lexical_ties(tokens)
     end
 
     # @rbs (Logger logger) -> void
@@ -1201,7 +1202,8 @@ module Lrama
         @states,
         @scanner_fsa,
         lex_prec,
-        @length_precedences
+        @length_precedences,
+        lex_tie
       )
       @scanner_accepts_table.build
     end
@@ -1286,6 +1288,31 @@ module Lrama
       end
 
       exit false
+    end
+
+    # @rbs (Logger logger) -> void
+    def validate_pslr_scanner_conflicts!(logger)
+      return unless pslr_defined?
+      return unless @scanner_accepts_table
+      return unless @scanner_accepts_table.unresolved_conflicts?
+
+      @scanner_accepts_table.conflicts.each do |conflict|
+        logger.error(pslr_scanner_conflict_message(conflict))
+      end
+
+      exit false
+    end
+
+    # @rbs (State::ScannerAccepts::Conflict conflict) -> String
+    def pslr_scanner_conflict_message(conflict)
+      state = conflict.parser_state_id || "unknown"
+      shorter = conflict.shorter_tokens.empty? ? "(none)" : conflict.shorter_tokens.join(", ")
+      selected = conflict.selected_shorter_token || "(none)"
+      current = conflict.current_tokens.empty? ? "(none)" : conflict.current_tokens.join(", ")
+
+      "unresolved PSLR scanner conflict in state #{state}, scanner state #{conflict.scanner_state_id}: " \
+        "shorter matches: #{shorter}; selected shorter token: #{selected}; " \
+        "current matches: #{current}; add an explicit %lex-prec rule or adjust lexical ties"
     end
 
     # @rbs (Logger logger) -> void

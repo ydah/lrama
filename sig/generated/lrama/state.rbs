@@ -78,6 +78,8 @@ module Lrama
 
     attr_accessor pslr_item_lookahead_set: lookahead_set?
 
+    attr_accessor lexer_context: Integer?
+
     # @rbs (Integer id, Grammar::Symbol accessing_symbol, Array[Item] kernels) -> void
     def initialize: (Integer id, Grammar::Symbol accessing_symbol, Array[Item] kernels) -> void
 

@@ -34,6 +34,7 @@ module Lrama
       %union
       %token
       %token-pattern
+      %symbol-set
       %type
       %nterm
       %left
@@ -47,6 +48,8 @@ module Lrama
       %lex-param
       %lexer-context
       %lex-prec
+      %lex-tie
+      %lex-no-tie
       %parse-param
       %initial-action
       %precedence
@@ -139,6 +142,8 @@ module Lrama
         return [:STRING, Lrama::Lexer::Token::Str.new(s_value: %Q(#{@scanner.matched}), location: location)]
       when @scanner.scan(%r{/[^/]+/})
         return [:REGEX, Lrama::Lexer::Token::Regex.new(s_value: @scanner.matched, location: location)]
+      when @scanner.scan(/<~|<-|-~|<<|-<|<s|-s/)
+        return [@scanner.matched, Lrama::Lexer::Token::Token.new(s_value: @scanner.matched, location: location)]
       when @scanner.scan(/-s(?=\s)/)
         return ['-s', Lrama::Lexer::Token::Token.new(s_value: @scanner.matched, location: location)]
       when @scanner.scan(/-(?=\s)/)

@@ -3,74 +3,62 @@
 RSpec.describe Lrama::LengthPrecedences do
   let(:lex_prec) { Lrama::Grammar::LexPrec.new }
 
-  describe "#precedence" do
-    it "returns :undefined when no rule exists" do
-      length_prec = Lrama::LengthPrecedences.new(lex_prec)
-      expect(length_prec.precedence("TOKEN_A", "TOKEN_B")).to eq(:undefined)
-    end
-
-    it "returns :left when shorter token should be preferred" do
-      left_token = Lrama::Lexer::Token::Ident.new(s_value: "RANGLE")
-      right_token = Lrama::Lexer::Token::Ident.new(s_value: "RSHIFT")
-      lex_prec.add_rule(
-        left_token: left_token,
-        operator: Lrama::Grammar::LexPrec::SHORTER,
-        right_token: right_token,
-        lineno: 1
-      )
-      length_prec = Lrama::LengthPrecedences.new(lex_prec)
-
-      expect(length_prec.precedence("RANGLE", "RSHIFT")).to eq(:left)
-    end
-
-    it "returns :right for the inverse relationship" do
-      left_token = Lrama::Lexer::Token::Ident.new(s_value: "RANGLE")
-      right_token = Lrama::Lexer::Token::Ident.new(s_value: "RSHIFT")
-      lex_prec.add_rule(
-        left_token: left_token,
-        operator: Lrama::Grammar::LexPrec::SHORTER,
-        right_token: right_token,
-        lineno: 1
-      )
-      length_prec = Lrama::LengthPrecedences.new(lex_prec)
-
-      expect(length_prec.precedence("RSHIFT", "RANGLE")).to eq(:right)
-    end
+  def ident(name)
+    Lrama::Lexer::Token::Ident.new(s_value: name)
   end
 
-  describe "#prefer_shorter?" do
-    it "returns true when shorter token should be preferred" do
-      left_token = Lrama::Lexer::Token::Ident.new(s_value: "RANGLE")
-      right_token = Lrama::Lexer::Token::Ident.new(s_value: "RSHIFT")
+  describe "#resolution" do
+    it "defaults same-token autolength conflicts to longest match" do
+      length_prec = Lrama::LengthPrecedences.new(lex_prec)
+
+      expect(length_prec.resolution("ID", "ID")).to eq(Lrama::LengthPrecedences::PREFER_NEW)
+      expect(length_prec.precedes?("ID", "ID")).to be true
+    end
+
+    it "leaves different-token length conflicts unresolved without a rule" do
+      length_prec = Lrama::LengthPrecedences.new(lex_prec)
+
+      expect(length_prec.resolution("A", "B")).to eq(Lrama::LengthPrecedences::UNRESOLVED)
+      expect(length_prec.precedence("A", "B")).to eq(:undefined)
+    end
+
+    it "supports explicit shortest-match precedence" do
       lex_prec.add_rule(
-        left_token: left_token,
-        operator: Lrama::Grammar::LexPrec::SHORTER,
-        right_token: right_token,
+        left_token: ident("COM"),
+        operator: Lrama::Grammar::LexPrec::SHORTEST,
+        right_token: ident("COM"),
         lineno: 1
       )
       length_prec = Lrama::LengthPrecedences.new(lex_prec)
 
-      expect(length_prec.prefer_shorter?("RANGLE", "RSHIFT")).to be true
+      expect(length_prec.resolution("COM", "COM")).to eq(Lrama::LengthPrecedences::PREFER_OLD)
+      expect(length_prec.prefer_shorter?("COM", "COM")).to be true
     end
 
-    it "returns false when no preference exists" do
-      length_prec = Lrama::LengthPrecedences.new(lex_prec)
-
-      expect(length_prec.prefer_shorter?("TOKEN_A", "TOKEN_B")).to be false
-    end
-
-    it "returns false for inverse relationship" do
-      left_token = Lrama::Lexer::Token::Ident.new(s_value: "RANGLE")
-      right_token = Lrama::Lexer::Token::Ident.new(s_value: "RSHIFT")
+    it "supports explicit longest-match precedence" do
       lex_prec.add_rule(
-        left_token: left_token,
-        operator: Lrama::Grammar::LexPrec::SHORTER,
-        right_token: right_token,
+        left_token: ident("ID"),
+        operator: Lrama::Grammar::LexPrec::LONGEST,
+        right_token: ident("IF"),
         lineno: 1
       )
       length_prec = Lrama::LengthPrecedences.new(lex_prec)
 
-      expect(length_prec.prefer_shorter?("RSHIFT", "RANGLE")).to be false
+      expect(length_prec.resolution("ID", "IF")).to eq(Lrama::LengthPrecedences::PREFER_NEW)
+      expect(length_prec.resolution("IF", "ID")).to eq(Lrama::LengthPrecedences::PREFER_NEW)
+    end
+
+    it "supports right-token length precedence" do
+      lex_prec.add_rule(
+        left_token: ident("WORD"),
+        operator: Lrama::Grammar::LexPrec::TOKEN_RIGHT_LENGTH,
+        right_token: ident("NON"),
+        lineno: 1
+      )
+      length_prec = Lrama::LengthPrecedences.new(lex_prec)
+
+      expect(length_prec.resolution("WORD", "NON")).to eq(Lrama::LengthPrecedences::PREFER_NEW)
+      expect(length_prec.resolution("NON", "WORD")).to eq(Lrama::LengthPrecedences::PREFER_OLD)
     end
   end
 end

@@ -133,8 +133,11 @@ rule
   symbol_declaration:
       "%token" token_declarations
     | "%token-pattern" token_pattern_declarations
+    | "%symbol-set" symbol_set_declaration
     | "%lexer-context" lexer_context_declaration
     | "%lex-prec" lex_prec_declarations
+    | "%lex-tie" lex_tie_declaration
+    | "%lex-no-tie" lex_no_tie_declaration
     | "%type" symbol_declarations
         {
           val[1].each {|hash|
@@ -254,6 +257,12 @@ rule
           @grammar.add_lexer_context(name: val[0].s_value, symbols: val[1])
         }
 
+  symbol_set_declaration:
+      IDENTIFIER symbol+
+        {
+          @grammar.add_symbol_set(name: val[0].s_value, symbols: val[1])
+        }
+
   lex_prec_declarations:
       lex_prec_chain
         {
@@ -268,28 +277,56 @@ rule
         }
 
   lex_prec_chain:
-      IDENTIFIER lex_prec_op IDENTIFIER
+      symbol lex_prec_op symbol
         {
           result = [{ left: val[0], op: val[1], right: val[2] }]
         }
-    | lex_prec_chain lex_prec_op IDENTIFIER
+    | lex_prec_chain lex_prec_op symbol
         {
           last_right = val[0].last[:right]
           result = val[0] + [{ left: last_right, op: val[1], right: val[2] }]
         }
 
   lex_prec_op:
-      ","
+      "<~"
         {
-          result = Lrama::Grammar::LexPrec::SAME_PRIORITY
+          result = Lrama::Grammar::LexPrec::IDENTITY_RIGHT_LONGEST
         }
-    | "-"
+    | "<-"
         {
-          result = Lrama::Grammar::LexPrec::HIGHER
+          result = Lrama::Grammar::LexPrec::IDENTITY_RIGHT
+        }
+    | "-~"
+        {
+          result = Lrama::Grammar::LexPrec::LONGEST
+        }
+    | "<<"
+        {
+          result = Lrama::Grammar::LexPrec::TOKEN_RIGHT
+        }
+    | "-<"
+        {
+          result = Lrama::Grammar::LexPrec::TOKEN_RIGHT_LENGTH
+        }
+    | "<s"
+        {
+          result = Lrama::Grammar::LexPrec::IDENTITY_RIGHT_SHORTEST
         }
     | "-s"
         {
-          result = Lrama::Grammar::LexPrec::SHORTER
+          result = Lrama::Grammar::LexPrec::SHORTEST
+        }
+
+  lex_tie_declaration:
+      symbol symbol+
+        {
+          @grammar.add_lex_tie(operands: [val[0]] + val[1])
+        }
+
+  lex_no_tie_declaration:
+      symbol symbol+
+        {
+          @grammar.add_lex_no_tie(operands: [val[0]] + val[1])
         }
 
   rule_declaration:

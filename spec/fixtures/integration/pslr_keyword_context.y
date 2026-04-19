@@ -29,7 +29,7 @@ static int yyerror(YYLTYPE *loc, struct parse_params *p, const char *str);
 %token-pattern IF /if/
 %token-pattern ID /[a-z]+/
 
-%lex-prec IF - ID
+%lex-prec ID <~ IF
 
 %%
 

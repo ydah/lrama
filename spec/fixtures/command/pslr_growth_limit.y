@@ -6,7 +6,7 @@
 %token-pattern IF /if/
 %token-pattern ID /[a-z]+/
 
-%lex-prec IF - ID
+%lex-prec ID <~ IF
 
 %%
 
